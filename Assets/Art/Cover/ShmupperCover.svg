@@ -1,0 +1,310 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 2000" width="1400" height="2000" role="img" aria-label="Shmupper: The Arcane Keep cover art">
+  <title>SHMUPPER — The Arcane Keep</title>
+
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#05060b"/>
+      <stop offset="38%"  stop-color="#0b0d18"/>
+      <stop offset="70%"  stop-color="#151425"/>
+      <stop offset="100%" stop-color="#241a20"/>
+    </linearGradient>
+
+    <radialGradient id="portal" cx="50%" cy="62%" r="60%">
+      <stop offset="0%"   stop-color="#fff4d6"/>
+      <stop offset="24%"  stop-color="#ffd15a"/>
+      <stop offset="55%"  stop-color="#ff8a2b"/>
+      <stop offset="100%" stop-color="#b13c12"/>
+    </radialGradient>
+
+    <radialGradient id="portalHalo" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#ff9e42" stop-opacity="0.75"/>
+      <stop offset="45%"  stop-color="#ff7a1f" stop-opacity="0.26"/>
+      <stop offset="100%" stop-color="#ff7a1f" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#9db4ff" stop-opacity="0.42"/>
+      <stop offset="55%"  stop-color="#6b8cff" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#6b8cff" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="vignette" cx="50%" cy="46%" r="72%">
+      <stop offset="0%"   stop-color="#000000" stop-opacity="0"/>
+      <stop offset="62%"  stop-color="#000000" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.82"/>
+    </radialGradient>
+
+    <linearGradient id="groundFade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#0a0b12" stop-opacity="0"/>
+      <stop offset="45%"  stop-color="#07080d" stop-opacity="0.92"/>
+      <stop offset="100%" stop-color="#04050a"/>
+    </linearGradient>
+
+    <linearGradient id="titleInk" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#fff2c4"/>
+      <stop offset="46%"  stop-color="#ffd15a"/>
+      <stop offset="100%" stop-color="#e07a18"/>
+    </linearGradient>
+
+    <filter id="softGlow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="16" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <filter id="tightGlow" x="-90%" y="-90%" width="280%" height="280%">
+      <feGaussianBlur stdDeviation="7" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <filter id="hugeGlow" x="-70%" y="-70%" width="240%" height="240%">
+      <feGaussianBlur stdDeviation="34"/>
+    </filter>
+  </defs>
+
+  <!-- ══════════════════════════════ sky ══════════════════════════════ -->
+  <rect width="1400" height="2000" fill="url(#sky)"/>
+
+  <g opacity="0.85">
+    <circle cx="140"  cy="250" r="2.0" fill="#cdd8ff"/>
+    <circle cx="320"  cy="150" r="1.5" fill="#cdd8ff"/>
+    <circle cx="470"  cy="300" r="2.4" fill="#e6ecff"/>
+    <circle cx="620"  cy="180" r="1.6" fill="#cdd8ff"/>
+    <circle cx="880"  cy="140" r="2.1" fill="#e6ecff"/>
+    <circle cx="1240" cy="220" r="1.8" fill="#cdd8ff"/>
+    <circle cx="1330" cy="430" r="2.2" fill="#e6ecff"/>
+    <circle cx="200"  cy="520" r="1.5" fill="#cdd8ff"/>
+    <circle cx="1180" cy="620" r="1.7" fill="#cdd8ff"/>
+    <circle cx="90"   cy="700" r="1.9" fill="#cdd8ff"/>
+  </g>
+
+  <!-- Moon and dragon sit in the band of open sky between the title block and the battlements,
+       so neither one fights the lettering above it or the castle below it. -->
+  <circle cx="862" cy="754" r="240" fill="url(#moonGlow)"/>
+  <circle cx="862" cy="754" r="94" fill="#c3cdf0"/>
+  <circle cx="834" cy="731" r="15" fill="#aab5db"/>
+  <circle cx="883" cy="782" r="21" fill="#aab5db"/>
+  <circle cx="893" cy="723" r="9" fill="#aab5db"/>
+
+  <!-- baby dragon crossing the moon -->
+  <g transform="translate(880 748) scale(0.8) translate(-1042 -470)">
+    <g fill="#0a0b10">
+      <path d="M1006 452 L916 356 L858 424 L972 486 Z"/>
+      <path d="M1078 448 L1176 350 L1224 424 L1108 484 Z"/>
+      <ellipse cx="1042" cy="470" rx="52" ry="29"/>
+      <circle cx="1102" cy="456" r="24"/>
+      <path d="M1120 442 L1160 452 L1120 470 Z"/>
+      <path d="M1090 434 L1082 408 L1100 428 Z"/>
+      <path d="M1108 432 L1106 406 L1120 428 Z"/>
+      <path d="M996 480 Q930 528 872 508 Q928 512 986 466 Z"/>
+      <path d="M872 508 L846 496 L872 522 Z"/>
+    </g>
+    <circle cx="1122" cy="452" r="6" fill="#ff8a2b" filter="url(#tightGlow)"/>
+  </g>
+
+  <!-- ══════════════════════════ far ramparts ══════════════════════════ -->
+  <g fill="#101220">
+    <rect x="0" y="1180" width="1400" height="420"/>
+    <g>
+      <rect x="20"  y="1150" width="46" height="34"/><rect x="106" y="1150" width="46" height="34"/>
+      <rect x="192" y="1150" width="46" height="34"/><rect x="278" y="1150" width="46" height="34"/>
+      <rect x="1076" y="1150" width="46" height="34"/><rect x="1162" y="1150" width="46" height="34"/>
+      <rect x="1248" y="1150" width="46" height="34"/><rect x="1334" y="1150" width="46" height="34"/>
+    </g>
+  </g>
+
+  <!-- ═══════════════════════════ side towers ═══════════════════════════ -->
+  <g fill="#171928">
+    <!-- left tower -->
+    <rect x="176" y="880" width="196" height="720"/>
+    <path d="M158 884 L274 700 L390 884 Z"/>
+    <rect x="164" y="856" width="220" height="30"/>
+    <!-- right tower -->
+    <rect x="1030" y="820" width="196" height="780"/>
+    <path d="M1012 824 L1128 620 L1244 824 Z"/>
+    <rect x="1018" y="796" width="220" height="30"/>
+  </g>
+
+  <!-- tower windows -->
+  <g fill="#ff9e42" filter="url(#tightGlow)">
+    <rect x="252" y="960"  width="20" height="42" rx="9"/>
+    <rect x="252" y="1080" width="20" height="42" rx="9"/>
+    <rect x="1106" y="900"  width="20" height="42" rx="9"/>
+    <rect x="1106" y="1030" width="20" height="42" rx="9"/>
+  </g>
+  <g fill="#6b8cff" filter="url(#tightGlow)">
+    <rect x="252" y="1200" width="20" height="42" rx="9"/>
+    <rect x="1106" y="1160" width="20" height="42" rx="9"/>
+  </g>
+
+  <!-- gargoyle perched on the left tower -->
+  <g fill="#0c0d14" transform="translate(274 700) scale(0.9)">
+    <path d="M-96 -6 L-46 -78 L-22 -14 Z"/>
+    <path d="M96 -6 L46 -78 L22 -14 Z"/>
+    <rect x="-34" y="-40" width="68" height="52" rx="6"/>
+    <rect x="-24" y="-76" width="48" height="40" rx="7"/>
+    <path d="M-24 -74 L-32 -108 L-8 -80 Z"/>
+    <path d="M24 -74 L32 -108 L8 -80 Z"/>
+    <rect x="-40" y="10" width="26" height="34" rx="5"/>
+    <rect x="14" y="10" width="26" height="34" rx="5"/>
+  </g>
+  <rect x="256" y="642" width="36" height="8" rx="4" fill="#ffd15a" filter="url(#tightGlow)"/>
+
+  <!-- ══════════════════════════ the gatehouse ══════════════════════════ -->
+  <g fill="#1d1f2e">
+    <rect x="430" y="940" width="540" height="660"/>
+    <g>
+      <rect x="430" y="906" width="52" height="38"/><rect x="512" y="906" width="52" height="38"/>
+      <rect x="594" y="906" width="52" height="38"/><rect x="676" y="906" width="52" height="38"/>
+      <rect x="758" y="906" width="52" height="38"/><rect x="840" y="906" width="52" height="38"/>
+      <rect x="918" y="906" width="52" height="38"/>
+    </g>
+    <rect x="410" y="1560" width="580" height="46"/>
+  </g>
+
+  <!-- portal halo, then the arch itself -->
+  <ellipse cx="700" cy="1400" rx="470" ry="420" fill="url(#portalHalo)"/>
+  <path d="M552 1560 L552 1300 A148 148 0 0 1 848 1300 L848 1560 Z" fill="url(#portal)"/>
+  <path d="M552 1560 L552 1300 A148 148 0 0 1 848 1300 L848 1560 Z" fill="none" stroke="#2a2032" stroke-width="16"/>
+
+  <!-- arcane sigils burning in the archway -->
+  <g fill="#fff6dc" opacity="0.55">
+    <rect x="596" y="1250" width="10" height="46" rx="5"/>
+    <rect x="794" y="1250" width="10" height="46" rx="5"/>
+    <circle cx="700" cy="1214" r="13"/>
+  </g>
+
+  <!-- ══════════════════ the Gunmage, backlit in the gate ══════════════════ -->
+  <g fill="#040509">
+    <!-- coat -->
+    <path d="M660 1560 L664 1372 Q700 1348 736 1372 L742 1560 Z"/>
+    <path d="M655 1424 L636 1520 L662 1524 Z"/>
+    <path d="M747 1424 L766 1520 L740 1524 Z"/>
+    <!-- head and wide brim -->
+    <circle cx="701" cy="1338" r="27"/>
+    <ellipse cx="701" cy="1330" rx="70" ry="13"/>
+    <path d="M676 1330 Q701 1276 726 1330 Z"/>
+    <!-- raised arm and revolver -->
+    <path d="M736 1382 L800 1318 L818 1336 L752 1400 Z"/>
+    <rect x="800" y="1288" width="34" height="26" rx="5" transform="rotate(-42 817 1301)"/>
+    <rect x="820" y="1272" width="62" height="15" rx="5" transform="rotate(-42 851 1279)"/>
+    <!-- trailing arm -->
+    <path d="M662 1382 L636 1452 L654 1462 L678 1398 Z"/>
+  </g>
+  <circle cx="878" cy="1246" r="17" fill="#ffd15a" filter="url(#softGlow)"/>
+  <circle cx="878" cy="1246" r="7" fill="#fff8e2"/>
+
+  <!-- steps -->
+  <g fill="#181a26">
+    <path d="M470 1606 L930 1606 L960 1642 L440 1642 Z"/>
+    <path d="M440 1642 L960 1642 L1000 1684 L400 1684 Z"/>
+  </g>
+
+  <!-- ════════════════════ the garrison closing in ════════════════════ -->
+
+  <!-- hollow knight, left of the gate: floating helm over an empty gorget -->
+  <g fill="#080910" transform="translate(392 1360) scale(1.06)">
+    <rect x="-40" y="0" width="80" height="96" rx="7"/>
+    <rect x="-52" y="-6" width="24" height="52" rx="6"/>
+    <rect x="28" y="-6" width="24" height="52" rx="6"/>
+    <rect x="-30" y="-16" width="60" height="14" rx="6"/>
+    <rect x="-27" y="-74" width="54" height="48" rx="8"/>
+    <path d="M-16 -72 L0 -116 L16 -72 Z"/>
+    <rect x="-24" y="98" width="22" height="72" rx="5"/>
+    <rect x="4" y="98" width="22" height="72" rx="5"/>
+    <rect x="44" y="-38" width="12" height="150" rx="5" transform="rotate(16 50 37)"/>
+  </g>
+  <rect x="366" y="1310" width="34" height="7" rx="3.5" fill="#5cb4ff" filter="url(#tightGlow)"/>
+
+  <!-- wizard, right of the gate: cone, brim, orbiting orb -->
+  <g fill="#080910" transform="translate(1010 1338) scale(1.02)">
+    <path d="M0 -34 L58 128 L-58 128 Z"/>
+    <circle cx="0" cy="-56" r="26"/>
+    <ellipse cx="0" cy="-72" rx="62" ry="11"/>
+    <path d="M-26 -74 Q0 -142 26 -74 Z"/>
+  </g>
+  <circle cx="1084" cy="1382" r="17" fill="#b866ff" filter="url(#softGlow)"/>
+  <rect x="996" y="1278" width="28" height="7" rx="3.5" fill="#b866ff" filter="url(#tightGlow)"/>
+
+  <!-- imps swarming the steps -->
+  <g fill="#070810">
+    <g transform="translate(214 1596) scale(0.82)">
+      <circle cx="0" cy="0" r="30"/>
+      <path d="M-16 -22 L-24 -54 L-4 -30 Z"/><path d="M16 -22 L24 -54 L4 -30 Z"/>
+      <rect x="-20" y="26" width="14" height="30" rx="5"/><rect x="6" y="26" width="14" height="30" rx="5"/>
+    </g>
+    <g transform="translate(1216 1620) scale(0.7)">
+      <circle cx="0" cy="0" r="30"/>
+      <path d="M-16 -22 L-24 -54 L-4 -30 Z"/><path d="M16 -22 L24 -54 L4 -30 Z"/>
+      <rect x="-20" y="26" width="14" height="30" rx="5"/><rect x="6" y="26" width="14" height="30" rx="5"/>
+    </g>
+    <g transform="translate(1330 1560) scale(0.56)">
+      <circle cx="0" cy="0" r="30"/>
+      <path d="M-16 -22 L-24 -54 L-4 -30 Z"/><path d="M16 -22 L24 -54 L4 -30 Z"/>
+    </g>
+  </g>
+  <g fill="#7dff56" filter="url(#tightGlow)">
+    <rect x="199" y="1590" width="30" height="6" rx="3"/>
+    <rect x="1204" y="1616" width="24" height="5" rx="2.5"/>
+    <rect x="1321" y="1557" width="18" height="4" rx="2"/>
+  </g>
+
+  <!-- wall torches flanking the gate -->
+  <g>
+    <ellipse cx="486" cy="1300" rx="70" ry="86" fill="#ff8a2b" opacity="0.20" filter="url(#hugeGlow)"/>
+    <ellipse cx="914" cy="1300" rx="70" ry="86" fill="#ff8a2b" opacity="0.20" filter="url(#hugeGlow)"/>
+    <path d="M486 1268 Q502 1298 486 1322 Q470 1298 486 1268 Z" fill="#ffd15a" filter="url(#tightGlow)"/>
+    <path d="M914 1268 Q930 1298 914 1322 Q898 1298 914 1268 Z" fill="#ffd15a" filter="url(#tightGlow)"/>
+    <rect x="478" y="1322" width="16" height="42" rx="4" fill="#0d0e16"/>
+    <rect x="906" y="1322" width="16" height="42" rx="4" fill="#0d0e16"/>
+  </g>
+
+  <!-- ═══════════════════════ atmosphere and framing ═══════════════════════ -->
+  <rect y="1600" width="1400" height="400" fill="url(#groundFade)"/>
+  <rect width="1400" height="2000" fill="url(#vignette)"/>
+
+  <!-- ═══════════════════════════ title block ═══════════════════════════ -->
+  <g text-anchor="middle" font-family="Impact, 'Arial Black', 'Segoe UI Black', Haettenschweiler, sans-serif">
+    <g fill="#ffd15a" opacity="0.72">
+      <rect x="300" y="196" width="800" height="3"/>
+      <rect x="300" y="470" width="800" height="3"/>
+    </g>
+
+    <text x="700" y="172" font-size="34" letter-spacing="15" fill="#8f9bbf"
+          font-family="'Segoe UI', Tahoma, Verdana, sans-serif" font-weight="600">
+      AN ARCADE SHOOT 'EM UP
+    </text>
+
+    <g filter="url(#softGlow)">
+      <text x="700" y="400" font-size="196" letter-spacing="10"
+            fill="url(#titleInk)" stroke="#3d2208" stroke-width="7" paint-order="stroke">
+        SHMUPPER
+      </text>
+    </g>
+
+    <text x="700" y="536" font-size="62" letter-spacing="20" fill="#73ffcc"
+          font-family="'Segoe UI', Tahoma, Verdana, sans-serif" font-weight="700">
+      THE ARCANE KEEP
+    </text>
+
+    <text x="700" y="612" font-size="30" letter-spacing="6" fill="#9aa6c6"
+          font-family="'Segoe UI', Tahoma, Verdana, sans-serif">
+      A CASTLE THAT REBUILDS ITSELF EVERY NIGHT
+    </text>
+  </g>
+
+  <!-- ═══════════════════════════ footer block ═══════════════════════════ -->
+  <g text-anchor="middle" font-family="'Segoe UI', Tahoma, Verdana, sans-serif">
+    <rect x="300" y="1782" width="800" height="3" fill="#ffd15a" opacity="0.62"/>
+
+    <text x="700" y="1866" font-size="46" letter-spacing="7" fill="#f24450" font-weight="700">
+      EVERY UPGRADE YOU BUY
+    </text>
+    <text x="700" y="1922" font-size="46" letter-spacing="7" fill="#f24450" font-weight="700">
+      MAKES THEM STRONGER
+    </text>
+
+    <text x="700" y="1976" font-size="25" letter-spacing="5" fill="#6f7a99">
+      PROCEDURAL CASTLE  ·  SIX FIENDS  ·  FOUR GUNS  ·  ONE GUNMAGE
+    </text>
+  </g>
+</svg>
