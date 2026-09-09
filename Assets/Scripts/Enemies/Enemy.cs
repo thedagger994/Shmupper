@@ -16,16 +16,10 @@ namespace Shmupper
         protected float CurrentHealth;
         protected Transform Body;
 
-        readonly List<Renderer> _renderers = new List<Renderer>();
-        readonly List<Color> _baseColors = new List<Color>();
-        MaterialPropertyBlock _mpb;
+        EnemyAppearance _appearance;
 
-        float _flashTimer;
         float _spawnTimer;
         bool _dead;
-
-        static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
-        static readonly int ColorId = Shader.PropertyToID("_Color");
 
         /// Live roster, used for crowd separation and for the compass. Kept as a plain static
         /// list because it is walked every frame and a scene search would not be affordable.
@@ -51,11 +45,14 @@ namespace Shmupper
 
             transform.position = position;
             gameObject.layer = Layers.Enemy;
-            _mpb = new MaterialPropertyBlock();
             _spawnTimer = 0.55f;
 
             BuildBody();
-            CacheRenderers();
+
+            _appearance = GetComponent<EnemyAppearance>();
+            if (_appearance == null) _appearance = gameObject.AddComponent<EnemyAppearance>();
+            _appearance.Capture();
+
             ConfigureCollision();
             OnSpawned();
 
@@ -109,12 +106,6 @@ namespace Shmupper
                 if (Body != null) Body.localScale = Vector3.one;
             }
 
-            if (_flashTimer > 0f)
-            {
-                _flashTimer -= dt;
-                ApplyFlash(Mathf.Clamp01(_flashTimer / 0.09f));
-            }
-
             Behave(dt);
         }
 
@@ -123,7 +114,12 @@ namespace Shmupper
             if (!IsAlive || IsMaterialising) return;
 
             CurrentHealth -= info.Amount;
-            _flashTimer = 0.09f;
+
+            if (_appearance != null)
+            {
+                _appearance.Flash();
+                _appearance.SetHealth(HealthFraction);
+            }
 
             Fx.Impact(info.Point, info.Normal, Palette.Of(Kind), 3, 0.6f);
             Sfx.Play(SfxId.EnemyHurt, transform.position, 1f, 0.5f);
@@ -154,43 +150,5 @@ namespace Shmupper
 
         public int Points => Stats.Points;
 
-        // ------------------------------------------------------------- hit feedback
-
-        void CacheRenderers()
-        {
-            _renderers.Clear();
-            _baseColors.Clear();
-
-            foreach (var r in GetComponentsInChildren<Renderer>())
-            {
-                _renderers.Add(r);
-                var mat = r.sharedMaterial;
-                Color c = Color.white;
-                if (mat != null)
-                {
-                    if (mat.HasProperty(BaseColorId)) c = mat.GetColor(BaseColorId);
-                    else if (mat.HasProperty(ColorId)) c = mat.GetColor(ColorId);
-                }
-                _baseColors.Add(c);
-            }
-        }
-
-        /// Materials are shared across the whole horde, so the hit flash has to go through a
-        /// property block. Writing to the material directly would flash every enemy of that kind
-        /// at once.
-        void ApplyFlash(float amount)
-        {
-            for (int i = 0; i < _renderers.Count; i++)
-            {
-                var r = _renderers[i];
-                if (r == null) continue;
-
-                r.GetPropertyBlock(_mpb);
-                Color c = Color.Lerp(_baseColors[i], Color.white, amount);
-                _mpb.SetColor(BaseColorId, c);
-                _mpb.SetColor(ColorId, c);
-                r.SetPropertyBlock(_mpb);
-            }
-        }
     }
 }

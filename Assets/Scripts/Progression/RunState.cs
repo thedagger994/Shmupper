@@ -57,10 +57,21 @@ namespace Shmupper
 
         // ------------------------------------------------------------- enemy scaling
 
-        public float EnemyHealthMul => (1f + ThreatLevel * 0.17f) * (1f + (Floor - 1) * 0.22f);
-        public float EnemyDamageMul => (1f + ThreatLevel * 0.10f) * (1f + (Floor - 1) * 0.14f);
-        public float EnemySpeedMul  => Mathf.Min(1.75f, (1f + ThreatLevel * 0.028f) * (1f + (Floor - 1) * 0.035f));
-        public int   EnemyCountBonus => ThreatLevel / 2 + (Floor - 1);
+        /// The Keep's answer to the player getting stronger.
+        ///
+        /// These terms add rather than multiply, and health is capped. Multiplying threat by
+        /// depth compounds viciously - eight upgrades on floor four used to quadruple every
+        /// health pool, which turned a fast arcade shooter into a chore of emptying magazines
+        /// into things that would not fall over. Capping health at 2.6x keeps every enemy inside
+        /// a handful of shots for the whole run.
+        ///
+        /// The pressure the design needs has been moved into the terms that do not slow the game
+        /// down: enemies hit harder, and above all there are more of them. A crowded room is the
+        /// genre's own answer to difficulty, and it makes the player shoot more rather than less.
+        public float EnemyHealthMul => Mathf.Min(2.6f, 1f + ThreatLevel * 0.10f + (Floor - 1) * 0.12f);
+        public float EnemyDamageMul => 1f + ThreatLevel * 0.09f + (Floor - 1) * 0.13f;
+        public float EnemySpeedMul  => Mathf.Min(1.6f, 1f + ThreatLevel * 0.022f + (Floor - 1) * 0.03f);
+        public int   EnemyCountBonus => ThreatLevel / 2 + (Floor - 1) * 2;
 
         // ------------------------------------------------------------- scoring
 

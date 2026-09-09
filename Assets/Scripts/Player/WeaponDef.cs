@@ -33,7 +33,7 @@ namespace Shmupper
             new WeaponDef
             {
                 Id = WeaponId.Spellslinger, Name = "SPELLSLINGER", ShortName = "SLINGER",
-                Hitscan = true, Damage = 24f, Pellets = 1, ShotsPerSecond = 4.6f,
+                Hitscan = true, Damage = 30f, Pellets = 1, ShotsPerSecond = 4.6f,
                 SpreadDegrees = 0.35f, Range = 140f, InfiniteAmmo = true, MagazineBase = 0,
                 Knockback = 2f, RecoilKick = 1.6f, Tint = Palette.PlayerBolt,
                 Sound = SfxId.ShootPistol, UnlockFloor = 1,
@@ -42,7 +42,7 @@ namespace Shmupper
             new WeaponDef
             {
                 Id = WeaponId.Emberlance, Name = "EMBERLANCE", ShortName = "EMBER",
-                Hitscan = true, Damage = 11f, Pellets = 9, ShotsPerSecond = 1.35f,
+                Hitscan = true, Damage = 14f, Pellets = 9, ShotsPerSecond = 1.35f,
                 SpreadDegrees = 5.2f, Range = 45f, MagazineBase = 36, AmmoPerPickup = 6,
                 Knockback = 5f, RecoilKick = 4.5f, Tint = Palette.EmberShot,
                 Sound = SfxId.ShootShotgun, UnlockFloor = 1,
@@ -51,7 +51,7 @@ namespace Shmupper
             new WeaponDef
             {
                 Id = WeaponId.Arcanoflux, Name = "ARCANOFLUX", ShortName = "FLUX",
-                Hitscan = true, Damage = 8.5f, Pellets = 1, ShotsPerSecond = 11f,
+                Hitscan = true, Damage = 11f, Pellets = 1, ShotsPerSecond = 11f,
                 SpreadDegrees = 2.4f, Range = 90f, MagazineBase = 260, AmmoPerPickup = 40,
                 Knockback = 0.6f, RecoilKick = 0.7f, Tint = Palette.FluxShot,
                 Sound = SfxId.ShootFlux, UnlockFloor = 2,
@@ -60,7 +60,7 @@ namespace Shmupper
             new WeaponDef
             {
                 Id = WeaponId.Runeblaster, Name = "RUNEBLASTER", ShortName = "RUNE",
-                Hitscan = false, Damage = 95f, Pellets = 1, ShotsPerSecond = 0.95f,
+                Hitscan = false, Damage = 125f, Pellets = 1, ShotsPerSecond = 0.95f,
                 SpreadDegrees = 0f, Range = 140f, MagazineBase = 18, AmmoPerPickup = 3,
                 ProjectileSpeed = 34f, SplashRadius = 5.5f,
                 Knockback = 12f, RecoilKick = 6f, Tint = Palette.RuneShot,

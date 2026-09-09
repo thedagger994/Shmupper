@@ -33,18 +33,22 @@ namespace Shmupper
         {
             switch (kind)
             {
+                // Health is quoted in Spellslinger shots at base damage (30), because that is the
+                // gun the player always has and the yardstick every other weapon is felt
+                // against. Trash dies in one, mid-tier in two or three, and only the Gargoyle
+                // asks the player to commit. Nothing in the castle is a bullet sponge.
                 case EnemyKind.Imp:
-                    return new EnemyStats { Health = 34f, Speed = 7.4f, Damage = 7f, Points = 100, Radius = 0.45f, Height = 1.2f };
+                    return new EnemyStats { Health = 22f, Speed = 7.4f, Damage = 7f, Points = 100, Radius = 0.45f, Height = 1.2f };
                 case EnemyKind.HollowKnight:
-                    return new EnemyStats { Health = 105f, Speed = 4.6f, Damage = 17f, Points = 250, Radius = 0.6f, Height = 2.1f };
+                    return new EnemyStats { Health = 68f, Speed = 4.6f, Damage = 17f, Points = 250, Radius = 0.6f, Height = 2.1f };
                 case EnemyKind.Wizard:
-                    return new EnemyStats { Health = 78f, Speed = 3.9f, Damage = 13f, Points = 400, Radius = 0.6f, Height = 2.0f };
+                    return new EnemyStats { Health = 45f, Speed = 3.9f, Damage = 13f, Points = 400, Radius = 0.6f, Height = 2.0f };
                 case EnemyKind.BabyDragon:
-                    return new EnemyStats { Health = 92f, Speed = 6.6f, Damage = 15f, Points = 500, Radius = 0.7f, Height = 1.1f };
+                    return new EnemyStats { Health = 58f, Speed = 6.6f, Damage = 15f, Points = 500, Radius = 0.7f, Height = 1.1f };
                 case EnemyKind.Gargoyle:
-                    return new EnemyStats { Health = 240f, Speed = 3.2f, Damage = 26f, Points = 750, Radius = 0.85f, Height = 2.6f };
+                    return new EnemyStats { Health = 125f, Speed = 3.2f, Damage = 26f, Points = 750, Radius = 0.85f, Height = 2.6f };
                 default:
-                    return new EnemyStats { Health = 1600f, Speed = 4.2f, Damage = 30f, Points = 5000, Radius = 1.1f, Height = 3.2f };
+                    return new EnemyStats { Health = 620f, Speed = 4.2f, Damage = 30f, Points = 5000, Radius = 1.1f, Height = 3.2f };
             }
         }
     }
