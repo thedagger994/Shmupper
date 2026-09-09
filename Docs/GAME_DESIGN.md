@@ -151,8 +151,11 @@ count   += T/2 + (F−1)
 
 ## 8. Presentation
 
-**Graphics.** Every visual in the game is generated at runtime from Unity primitives — boxes,
-spheres, cones and quads — with flat colours and emissive accents. Castle geometry is welded into
+**Graphics.** Every visual in the game is built from Unity primitives — boxes, spheres, cones and
+quads — with flat colours and emissive accents. The shapes are defined once as code, in
+`EnemyBuilder.cs` and `WeaponView.cs`, and `Shmupper > Forge Assets` bakes that code into real
+prefabs with persisted meshes and materials, which is what the game instantiates. Castle geometry
+is welded into
 8×8-cell chunks and lit by baking torchlight into vertex colours, drawn with a custom URP shader.
 That gives the blotchy, hand-placed lighting of a late-90s arena shooter, sidesteps the per-object
 realtime light limit entirely, and keeps a whole floor down to a few dozen draw calls.
@@ -184,7 +187,19 @@ end and in the HUD during play.
 
 ## 10. Running it
 
-Open the project in Unity 6.6 (6000.6.0f1) and press Play on any scene. `Bootstrap.cs` builds the
-entire game at runtime — there is nothing to wire up in the inspector and no prefabs to assign.
+Open the project in Unity 6.6 (6000.6.0f1) and run **`Shmupper > Forge Assets and Build Scene`**
+once. That bakes the bestiary and the arsenal into prefabs under `Assets/Prefabs`, writes the
+registry to `Assets/Resources/GameContent.asset`, and saves a play scene to
+`Assets/Scenes/Shmupper.unity`. Open that scene and press Play.
+
+The forge is safe to re-run at any time: prefabs are overwritten in place so existing references
+survive, and materials are shared by content hash rather than duplicated. Editing a forged prefab
+by hand is the intended workflow — enemy health, speed, damage and score are serialized on the
+prefab, so tuning them is an Inspector edit rather than a code change. Re-running the forge will
+overwrite those hand edits, since it re-stamps from the table in `EnemyContext.cs`.
+
+Every prefab lookup is allowed to fail. On a fresh clone where the forge has never run, the game
+falls back to building each enemy, weapon and level prop from primitives at runtime exactly as
+before, so pressing Play on any scene still works.
 
 Scores are written to `%USERPROFILE%/AppData/LocalLow/DefaultCompany/Shmupper/shmupper_scores.json`.

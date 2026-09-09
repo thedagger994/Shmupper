@@ -30,32 +30,34 @@ namespace Shmupper
                 Destroy(_model.gameObject);
             }
 
-            var root = new GameObject("ViewModel_" + id);
-            root.transform.SetParent(transform, false);
+            var def = WeaponDef.Get(id);
+
+            var content = GameContent.Instance;
+            var prefab = content != null ? content.WeaponPrefab(id) : null;
+
+            GameObject root = prefab != null
+                ? Instantiate(prefab, transform)
+                : BuildFromPrimitives(id, def);
+
+            root.name = "ViewModel_" + id;
             root.transform.localPosition = RestPosition;
+            root.transform.localRotation = Quaternion.identity;
             _model = root.transform;
 
-            var steel = MatLib.Lit(new Color(0.17f, 0.17f, 0.20f), default, 0.55f, 0.8f);
-            var brass = MatLib.Lit(new Color(0.42f, 0.33f, 0.16f), default, 0.6f, 0.9f);
-            var wood = MatLib.Lit(new Color(0.20f, 0.12f, 0.08f), default, 0.15f);
-
-            var def = WeaponDef.Get(id);
-            var glow = MatLib.Lit(def.Tint * 0.25f, def.Tint * 3.2f);
-
-            switch (id)
+            // The muzzle is a named child on forged prefabs so it can be dragged around in the
+            // editor; a code-built viewmodel gets one created at the barrel instead.
+            _muzzle = root.transform.Find("Muzzle");
+            if (_muzzle == null)
             {
-                case WeaponId.Spellslinger: BuildSpellslinger(root.transform, steel, brass, wood, glow); break;
-                case WeaponId.Emberlance:   BuildEmberlance(root.transform, steel, brass, wood, glow); break;
-                case WeaponId.Arcanoflux:   BuildArcanoflux(root.transform, steel, brass, glow); break;
-                default:                    BuildRuneblaster(root.transform, steel, brass, glow); break;
+                var muzzleGo = new GameObject("Muzzle");
+                muzzleGo.transform.SetParent(root.transform, false);
+                muzzleGo.transform.localPosition = new Vector3(0f, 0.02f, 0.62f);
+                _muzzle = muzzleGo.transform;
             }
 
-            var muzzleGo = new GameObject("Muzzle");
-            muzzleGo.transform.SetParent(root.transform, false);
-            muzzleGo.transform.localPosition = new Vector3(0f, 0.02f, 0.62f);
-            _muzzle = muzzleGo.transform;
+            _muzzleFlash = _muzzle.GetComponent<Light>();
+            if (_muzzleFlash == null) _muzzleFlash = _muzzle.gameObject.AddComponent<Light>();
 
-            _muzzleFlash = muzzleGo.AddComponent<Light>();
             _muzzleFlash.type = LightType.Point;
             _muzzleFlash.color = def.Tint;
             _muzzleFlash.range = 12f;
@@ -69,6 +71,29 @@ namespace Shmupper
                 mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 mr.receiveShadows = false;
             }
+        }
+
+        /// The original code-built arsenal. Still the fallback when no prefab has been forged,
+        /// and the source the asset forge bakes those prefabs from, so the shapes are defined
+        /// exactly once.
+        public static GameObject BuildFromPrimitives(WeaponId id, WeaponDef def)
+        {
+            var root = new GameObject("ViewModel_" + id);
+
+            var steel = MatLib.Lit(new Color(0.17f, 0.17f, 0.20f), default, 0.55f, 0.8f);
+            var brass = MatLib.Lit(new Color(0.42f, 0.33f, 0.16f), default, 0.6f, 0.9f);
+            var wood = MatLib.Lit(new Color(0.20f, 0.12f, 0.08f), default, 0.15f);
+            var glow = MatLib.Lit(def.Tint * 0.25f, def.Tint * 3.2f);
+
+            switch (id)
+            {
+                case WeaponId.Spellslinger: BuildSpellslinger(root.transform, steel, brass, wood, glow); break;
+                case WeaponId.Emberlance:   BuildEmberlance(root.transform, steel, brass, wood, glow); break;
+                case WeaponId.Arcanoflux:   BuildArcanoflux(root.transform, steel, brass, glow); break;
+                default:                    BuildRuneblaster(root.transform, steel, brass, glow); break;
+            }
+
+            return root;
         }
 
         static void BuildSpellslinger(Transform p, Material steel, Material brass, Material wood, Material glow)

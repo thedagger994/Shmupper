@@ -19,7 +19,14 @@ namespace Shmupper
             if (!keepCollider)
             {
                 var col = go.GetComponent<Collider>();
-                if (col != null) Object.Destroy(col);
+                if (col != null)
+                {
+                    // The asset forge calls this from edit mode, where a deferred Destroy never
+                    // runs - every primitive would be baked into the prefab still carrying the
+                    // collider Unity gives it.
+                    if (Application.isPlaying) Object.Destroy(col);
+                    else Object.DestroyImmediate(col);
+                }
             }
 
             var mr = go.GetComponent<MeshRenderer>();

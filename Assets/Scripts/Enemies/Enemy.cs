@@ -10,6 +10,17 @@ namespace Shmupper
     {
         public EnemyKind Kind { get; protected set; }
 
+        [Header("Tuning")]
+        [SerializeField]
+        [Tooltip("Stats for this enemy. Stamped onto the prefab by Shmupper > Forge Assets; " +
+                 "edit freely afterwards. Leaving Health at zero falls back to the code table.")]
+        EnemyStats _authoredStats = new EnemyStats();
+
+        [SerializeField]
+        [Tooltip("The visual hierarchy. Assigned on forged prefabs. Left empty, the enemy builds " +
+                 "its body from primitives at spawn time instead.")]
+        Transform _authoredBody;
+
         protected EnemyContext Ctx;
         protected EnemyStats Stats;
         protected float MaxHealth;
@@ -38,7 +49,7 @@ namespace Shmupper
         {
             Ctx = ctx;
             Kind = kind;
-            Stats = EnemyStats.For(kind);
+            Stats = _authoredStats != null && _authoredStats.IsAuthored ? _authoredStats : EnemyStats.For(kind);
 
             MaxHealth = Stats.Health * ctx.Run.EnemyHealthMul;
             CurrentHealth = MaxHealth;
@@ -62,8 +73,23 @@ namespace Shmupper
             Sfx.Play(SfxId.Pickup, position, 0.6f, 0.5f);
         }
 
+        /// A forged prefab arrives with its body already in the hierarchy, so nothing is built at
+        /// spawn time. Only enemies created from bare code fall through to the primitive builder.
         protected virtual void BuildBody()
         {
+            if (_authoredBody != null)
+            {
+                Body = _authoredBody;
+                return;
+            }
+
+            var existing = transform.Find("Body");
+            if (existing != null)
+            {
+                Body = existing;
+                return;
+            }
+
             Body = EnemyBuilder.Build(Kind, transform);
         }
 

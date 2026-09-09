@@ -20,14 +20,23 @@ namespace Shmupper
         public Func<EnemyKind, Vector3, Enemy> SpawnEnemy;
     }
 
+    /// Serializable so the numbers can live on the enemy prefab and be tuned in the Inspector.
+    /// The table below is the source the asset forge stamps those prefabs from, and the fallback
+    /// for any enemy created in code. A Health of zero means "nothing was authored here, use the
+    /// table" - Unity always constructs a serialized class field, so it can never be null.
+    [System.Serializable]
     public class EnemyStats
     {
+        [Tooltip("Base pool before threat and depth scaling. Quoted in Spellslinger shots: 30 damage each.")]
         public float Health;
         public float Speed;
         public float Damage;
         public int Points;
+        [Tooltip("Collision radius and height. Also sizes the spawn burst.")]
         public float Radius;
         public float Height;
+
+        public bool IsAuthored => Health > 0f;
 
         public static EnemyStats For(EnemyKind kind)
         {

@@ -232,15 +232,28 @@ namespace Shmupper
 
         public Enemy SpawnEnemy(EnemyKind kind, Vector3 position)
         {
-            var go = new GameObject("Enemy_" + kind);
-            if (_holder != null) go.transform.SetParent(_holder, true);
-
-            Enemy enemy = AttachBehaviour(go, kind);
+            Enemy enemy = InstantiateEnemy(kind, position);
             enemy.Spawn(_ctx, kind, position);
 
             _aliveCount++;
             OnAliveCountChanged?.Invoke(_aliveCount);
             return enemy;
+        }
+
+        /// Prefab first, primitives second. A forged project instantiates an authored enemy with
+        /// its art, collider and tuned stats already on it; a project that has never run the
+        /// forge still spawns a working enemy assembled in code.
+        Enemy InstantiateEnemy(EnemyKind kind, Vector3 position)
+        {
+            var content = GameContent.Instance;
+            var prefab = content != null ? content.EnemyPrefab(kind) : null;
+
+            if (prefab != null)
+                return Instantiate(prefab, position, Quaternion.identity, _holder);
+
+            var go = new GameObject("Enemy_" + kind);
+            if (_holder != null) go.transform.SetParent(_holder, true);
+            return AttachBehaviour(go, kind);
         }
 
         static Enemy AttachBehaviour(GameObject go, EnemyKind kind)

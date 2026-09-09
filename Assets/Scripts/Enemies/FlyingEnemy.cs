@@ -12,13 +12,19 @@ namespace Shmupper
 
         SphereCollider _collider;
 
+        /// Idempotent, so a forged prefab reuses the collider and body it already carries rather
+        /// than stacking a second pair on top of them.
         protected override void ConfigureCollision()
         {
-            _collider = gameObject.AddComponent<SphereCollider>();
+            _collider = GetComponent<SphereCollider>();
+            if (_collider == null) _collider = gameObject.AddComponent<SphereCollider>();
+
             _collider.radius = Stats.Radius;
             _collider.center = Vector3.up * 0.2f;
 
-            var rb = gameObject.AddComponent<Rigidbody>();
+            var rb = GetComponent<Rigidbody>();
+            if (rb == null) rb = gameObject.AddComponent<Rigidbody>();
+
             rb.isKinematic = true;
             rb.useGravity = false;
             rb.interpolation = RigidbodyInterpolation.Interpolate;

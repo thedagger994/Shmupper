@@ -13,9 +13,13 @@ namespace Shmupper
 
         static readonly Collider[] NeighbourBuffer = new Collider[12];
 
+        /// Idempotent: a forged prefab already carries its controller, so this reuses whatever is
+        /// there and only adds one when the enemy was created from bare code.
         protected override void ConfigureCollision()
         {
-            Controller = gameObject.AddComponent<CharacterController>();
+            Controller = GetComponent<CharacterController>();
+            if (Controller == null) Controller = gameObject.AddComponent<CharacterController>();
+
             Controller.radius = Stats.Radius;
             Controller.height = Stats.Height;
             Controller.center = new Vector3(0f, Stats.Height * 0.5f, 0f);
