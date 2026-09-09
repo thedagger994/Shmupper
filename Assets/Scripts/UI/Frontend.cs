@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -25,20 +26,20 @@ namespace Shmupper
         RectTransform _namePage;
         RectTransform _footer;
 
-        Text _attractTitle;
-        Text _attractHeading;
-        Text _attractBody;
-        Text _attractHint;
+        TMP_Text _attractTitle;
+        TMP_Text _attractHeading;
+        TMP_Text _attractBody;
+        TMP_Text _attractHint;
 
-        Text _creditsText;
-        Text _startText;
-        Text _recordText;
+        TMP_Text _creditsText;
+        TMP_Text _startText;
+        TMP_Text _recordText;
 
-        Text _gameOverBody;
-        Text _gameOverTitle;
+        TMP_Text _gameOverBody;
+        TMP_Text _gameOverTitle;
 
-        Text _nameSlots;
-        Text _namePrompt;
+        TMP_Text _nameSlots;
+        TMP_Text _namePrompt;
 
         int _credits;
         int _page;

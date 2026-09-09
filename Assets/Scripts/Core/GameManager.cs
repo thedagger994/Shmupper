@@ -19,6 +19,7 @@ namespace Shmupper
         PlayerRig _rig;
         WaveDirector _director;
         AttractStage _attract;
+        PostFx _postFx;
 
         Hud _hud;
         Frontend _frontend;
@@ -54,6 +55,9 @@ namespace Shmupper
 
             _rig = PlayerRig.Create(_run);
             _rig.Health.OnDied += HandlePlayerDied;
+
+            _postFx = PostFx.Create(transform);
+            _postFx.Bind(_rig.Health);
 
             _director = gameObject.AddComponent<WaveDirector>();
             _director.Init(_run, _rig.Root.transform, _rig.Health, _rig.Controller, _rig.Weapons);

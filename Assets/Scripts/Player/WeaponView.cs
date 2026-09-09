@@ -16,6 +16,11 @@ namespace Shmupper
 
         Vector3 _recoilOffset;
         Vector3 _recoilVelocity;
+        Vector3 _recoilAngles;
+        Vector3 _recoilAngularVelocity;
+        Vector2 _sway;
+        float _lastYaw;
+        float _lastPitch;
         float _bobPhase;
 
         public Transform Muzzle => _muzzle != null ? _muzzle : transform;
@@ -161,12 +166,23 @@ namespace Shmupper
                 Quaternion.Euler(-15f, 0f, 0f));
         }
 
+        /// Recoil is two springs, not one.
+        ///
+        /// The old version only shoved the gun backwards, which is why firing felt soft: a real
+        /// recoil impulse rotates the weapon far more than it translates it. The gun now snaps
+        /// its muzzle up and twists, while the much smaller positional kick drives it back into
+        /// the shoulder. Each shot randomises the twist so a burst never repeats the same motion.
         public void Kick(float amount)
         {
             _recoilVelocity += new Vector3(
-                Random.Range(-0.02f, 0.02f) * amount,
-                0.035f * amount,
-                -0.09f * amount);
+                Random.Range(-0.03f, 0.03f) * amount,
+                0.030f * amount,
+                -0.115f * amount);
+
+            _recoilAngularVelocity += new Vector3(
+                -14f * amount,                                  // muzzle climb
+                Random.Range(-4.5f, 4.5f) * amount,             // wander
+                Random.Range(-7f, 7f) * amount);                // barrel roll
 
             _flashTimer = 0.06f;
             if (_muzzleFlash != null) _muzzleFlash.intensity = 5f;
@@ -176,21 +192,43 @@ namespace Shmupper
         {
             if (_model == null) return;
 
-            // Critically damped spring back to rest - snappier than a lerp and it never
-            // overshoots into the camera.
-            _recoilVelocity -= _recoilOffset * (52f * Time.deltaTime);
-            _recoilVelocity *= Mathf.Exp(-11f * Time.deltaTime);
-            _recoilOffset += _recoilVelocity * Time.deltaTime;
+            float dt = Time.deltaTime;
 
-            _bobPhase += Time.deltaTime * (grounded ? speed01 * 11f : 2f);
+            // Positional spring: stiff and well damped, so the gun returns almost immediately.
+            _recoilVelocity -= _recoilOffset * (62f * dt);
+            _recoilVelocity *= Mathf.Exp(-13f * dt);
+            _recoilOffset += _recoilVelocity * dt;
+
+            // Angular spring: deliberately looser and slower to settle than the positional one.
+            // The offset in recovery rates is what makes the weapon feel like it has mass rather
+            // than snapping back on rails.
+            _recoilAngularVelocity -= _recoilAngles * (44f * dt);
+            _recoilAngularVelocity *= Mathf.Exp(-9f * dt);
+            _recoilAngles += _recoilAngularVelocity * dt;
+
+            _bobPhase += dt * (grounded ? speed01 * 11f : 2f);
             float bobX = Mathf.Cos(_bobPhase) * 0.022f * speed01;
             float bobY = Mathf.Abs(Mathf.Sin(_bobPhase)) * -0.020f * speed01;
 
-            _model.localPosition = RestPosition + _recoilOffset + new Vector3(bobX, bobY, 0f);
+            // Sway: the viewmodel lags behind the camera when the player turns, then catches up.
+            // Nothing sells weight more cheaply than the gun arriving a fraction late.
+            float yawDelta = Mathf.DeltaAngle(_lastYaw, transform.eulerAngles.y);
+            float pitchDelta = Mathf.DeltaAngle(_lastPitch, transform.eulerAngles.x);
+            _lastYaw = transform.eulerAngles.y;
+            _lastPitch = transform.eulerAngles.x;
+
+            _sway = Vector2.Lerp(_sway,
+                new Vector2(Mathf.Clamp(-yawDelta, -6f, 6f), Mathf.Clamp(pitchDelta, -6f, 6f)),
+                Mathf.Clamp01(dt * 12f));
+
+            _model.localPosition = RestPosition
+                                 + _recoilOffset
+                                 + new Vector3(bobX + _sway.x * 0.006f, bobY + _sway.y * 0.005f, 0f);
+
             _model.localRotation = Quaternion.Euler(
-                _recoilOffset.z * 90f,
-                bobX * 40f,
-                bobX * 60f);
+                _recoilAngles.x + _recoilOffset.z * 40f + _sway.y * 0.9f,
+                _recoilAngles.y + bobX * 40f - _sway.x * 1.4f,
+                _recoilAngles.z + bobX * 60f + _sway.x * 1.1f);
 
             if (_flashTimer > 0f)
             {

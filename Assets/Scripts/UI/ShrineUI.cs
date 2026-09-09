@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -19,12 +20,12 @@ namespace Shmupper
         RunState _run;
         RectTransform _page;
 
-        Text _essenceText;
-        Text _threatText;
-        Text _reportText;
-        Text _warningText;
+        TMP_Text _essenceText;
+        TMP_Text _threatText;
+        TMP_Text _reportText;
+        TMP_Text _warningText;
 
-        readonly List<Text> _rows = new List<Text>();
+        readonly List<TMP_Text> _rows = new List<TMP_Text>();
         int _cursor;
         string _report = "";
 

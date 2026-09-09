@@ -1,7 +1,10 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 
 namespace Shmupper.EditorTools
@@ -37,6 +40,8 @@ namespace Shmupper.EditorTools
 
             ForgeEnemies(content);
             ForgeWeapons(content);
+            ForgeVolumeProfile();
+            ForgeFontAsset();
 
             EditorUtility.SetDirty(content);
             AssetDatabase.SaveAssets();
@@ -284,6 +289,172 @@ namespace Shmupper.EditorTools
 
         // ------------------------------------------------------------------ registry and scene
 
+        // ------------------------------------------------------------------ typography
+
+        const string FontTtfPath = "Assets/Art/Fonts/IMFellEnglish-Regular.ttf";
+        const string FontAssetPath = "Assets/Resources/Fonts/IMFellEnglish SDF.asset";
+
+        /// TextMeshPro needs its shaders and TMP_Settings present before any SDF text will draw,
+        /// and they ship inside the ugui package as a .unitypackage rather than as assets. This
+        /// unpacks them. It must run as its own editor session: the import completes after the
+        /// current one finishes, so anything creating a font asset in the same run finds nothing.
+        [MenuItem("Shmupper/Import TMP Essentials", false, 40)]
+        public static void ImportTmpEssentials()
+        {
+            if (AssetDatabase.IsValidFolder("Assets/TextMesh Pro"))
+            {
+                Debug.Log("[Shmupper] TMP essentials already present.");
+                return;
+            }
+
+            string package = null;
+            foreach (var dir in System.IO.Directory.GetDirectories("Library/PackageCache"))
+            {
+                string candidate = System.IO.Path.Combine(dir, "Package Resources", "TMP Essential Resources.unitypackage");
+                if (System.IO.File.Exists(candidate)) { package = candidate; break; }
+            }
+
+            if (package == null)
+            {
+                Debug.LogError("[Shmupper] Could not find TMP Essential Resources.unitypackage in the package cache.");
+                return;
+            }
+
+            AssetDatabase.ImportPackage(package, false);
+            Debug.Log("[Shmupper] Importing TMP essentials from " + package);
+        }
+
+        /// Bakes the IM Fell English TTF into a signed distance field atlas. This is what fixes
+        /// the blurry front end: legacy text baked one bitmap at one size, whereas an SDF atlas
+        /// is resolution independent.
+        public static TMPro.TMP_FontAsset ForgeFontAsset()
+        {
+            var ttf = AssetDatabase.LoadAssetAtPath<Font>(FontTtfPath);
+            if (ttf == null)
+            {
+                Debug.LogError("[Shmupper] Font missing at " + FontTtfPath);
+                return null;
+            }
+
+            var existing = AssetDatabase.LoadAssetAtPath<TMPro.TMP_FontAsset>(FontAssetPath);
+            if (existing != null) return existing;
+
+            EnsureFolder("Assets/Resources/Fonts");
+
+            var asset = TMPro.TMP_FontAsset.CreateFontAsset(
+                ttf, 90, 9,
+                UnityEngine.TextCore.LowLevel.GlyphRenderMode.SDFAA,
+                1024, 1024,
+                TMPro.AtlasPopulationMode.Dynamic,
+                true);
+
+            if (asset == null)
+            {
+                Debug.LogError("[Shmupper] CreateFontAsset returned null - are TMP essentials imported?");
+                return null;
+            }
+
+            asset.name = "IMFellEnglish SDF";
+            AssetDatabase.CreateAsset(asset, FontAssetPath);
+
+            // The atlas texture and material are created in memory alongside the asset; without
+            // parenting them into the same file they are not saved and the font renders blank.
+            if (asset.atlasTextures != null)
+            {
+                for (int i = 0; i < asset.atlasTextures.Length; i++)
+                {
+                    if (asset.atlasTextures[i] == null) continue;
+                    asset.atlasTextures[i].name = "IMFellEnglish Atlas " + i;
+                    AssetDatabase.AddObjectToAsset(asset.atlasTextures[i], asset);
+                }
+            }
+
+            if (asset.material != null)
+            {
+                asset.material.name = "IMFellEnglish SDF Material";
+                AssetDatabase.AddObjectToAsset(asset.material, asset);
+            }
+
+            // Pre-render the characters the interface actually uses, so the atlas is populated in
+            // the committed asset rather than being filled in on the fly on first launch.
+            asset.TryAddCharacters(
+                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" +
+                " .,:;!?'\"()[]{}<>-_+=*/\\|@#$%^&~`");
+
+            EditorUtility.SetDirty(asset);
+            Debug.Log("[Shmupper] Font asset written to " + FontAssetPath);
+            return asset;
+        }
+
+        /// The castle's resting look. This is the half of the post-processing that never moves;
+        /// PostFx layers the reactive half on top at runtime, so anything animated in response to
+        /// damage is deliberately left out of here.
+        public static UnityEngine.Rendering.VolumeProfile ForgeVolumeProfile()
+        {
+            const string path = "Assets/Settings/ShmupperProfile.asset";
+
+            var profile = AssetDatabase.LoadAssetAtPath<UnityEngine.Rendering.VolumeProfile>(path);
+            if (profile == null)
+            {
+                profile = ScriptableObject.CreateInstance<UnityEngine.Rendering.VolumeProfile>();
+                AssetDatabase.CreateAsset(profile, path);
+            }
+            else
+            {
+                // Rebuild from scratch so re-running the forge is idempotent rather than
+                // accumulating a second copy of every override.
+                foreach (var existing in profile.components.ToArray())
+                {
+                    profile.Remove(existing.GetType());
+                    Object.DestroyImmediate(existing, true);
+                }
+            }
+
+            // Filmic response curve. Without it the emissive art clips to flat white the moment
+            // two torches overlap.
+            var tone = profile.Add<Tonemapping>(true);
+            tone.mode.value = TonemappingMode.ACES;
+
+            // Bloom is what makes glowing eyes and rune bands read as light sources rather than
+            // as bright paint. The threshold sits just under 1 so only genuinely emissive
+            // surfaces bleed, and the tint warms it toward torchlight.
+            var bloom = profile.Add<Bloom>(true);
+            bloom.threshold.value = 0.85f;
+            bloom.intensity.value = 1.15f;
+            bloom.scatter.value = 0.68f;
+            bloom.tint.value = new Color(1f, 0.88f, 0.74f);
+            bloom.highQualityFiltering.value = true;
+
+            var color = profile.Add<ColorAdjustments>(false);
+            color.contrast.overrideState = true;
+            color.contrast.value = 16f;
+            color.colorFilter.overrideState = true;
+            color.colorFilter.value = new Color(0.98f, 0.96f, 1f);
+
+            // Cool the stone down and let the torches provide the only warmth in frame.
+            var balance = profile.Add<WhiteBalance>(true);
+            balance.temperature.value = -12f;
+            balance.tint.value = 4f;
+
+            // Crushes the blacks toward blue and keeps highlights slightly amber, which is the
+            // whole medieval-dungeon-at-night look in one component.
+            var smh = profile.Add<ShadowsMidtonesHighlights>(true);
+            smh.shadows.value = new Vector4(0.86f, 0.90f, 1.10f, 0f);
+            smh.midtones.value = new Vector4(1f, 1f, 1f, 0f);
+            smh.highlights.value = new Vector4(1.06f, 1.00f, 0.92f, 0f);
+
+            // Deliberately light. Enough to take the digital edge off a fast turn, not enough to
+            // smear a first person game into nausea.
+            var blur = profile.Add<MotionBlur>(true);
+            blur.mode.value = MotionBlurMode.CameraOnly;
+            blur.quality.value = MotionBlurQuality.Medium;
+            blur.intensity.value = 0.14f;
+            blur.clamp.value = 0.04f;
+
+            EditorUtility.SetDirty(profile);
+            return profile;
+        }
+
         static GameContent LoadOrCreateContent()
         {
             string path = ResourceRoot + "/GameContent.asset";
@@ -311,12 +482,10 @@ namespace Shmupper.EditorTools
             manager.AddComponent<GameManager>();
 
             var volumeGo = new GameObject("Global Volume");
-            var volume = volumeGo.AddComponent<UnityEngine.Rendering.Volume>();
+            var volume = volumeGo.AddComponent<Volume>();
             volume.isGlobal = true;
-
-            var profile = AssetDatabase.LoadAssetAtPath<UnityEngine.Rendering.VolumeProfile>(
-                "Assets/Settings/SampleSceneProfile.asset");
-            if (profile != null) volume.sharedProfile = profile;
+            volume.priority = 0f;
+            volume.sharedProfile = ForgeVolumeProfile();
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             AddSceneToBuildSettings(ScenePath);

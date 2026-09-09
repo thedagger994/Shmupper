@@ -185,6 +185,15 @@ namespace Shmupper
 
             _view.Kick(def.RecoilKick);
             _player?.AddRecoil(def.RecoilKick * 0.32f);
+
+            // Only the heavy weapons punch the view. Doing it on the Arcanoflux at eleven shots a
+            // second would leave the field of view permanently pumping.
+            if (def.RecoilKick >= 3f)
+            {
+                _player?.AddFovKick(def.RecoilKick * 0.075f);
+                _player?.Shake(def.RecoilKick * 0.035f, 0.18f);
+            }
+
             Sfx.Play(def.Sound, muzzle);
         }
 

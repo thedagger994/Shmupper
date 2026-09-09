@@ -29,8 +29,14 @@ namespace Shmupper
         float _coyote;
         float _jumpBuffer;
 
-        float _shakeAmount;
-        float _shakeTimer;
+        float _trauma;
+        float _traumaDecay = 1.6f;
+        float _shakeSeed;
+        Vector3 _kickOffset;
+        Vector3 _kickVelocity;
+        float _fovKick;
+        Camera _cameraComponent;
+        float _baseFov = 90f;
         Vector3 _cameraBaseLocal;
 
         public bool InputEnabled = true;
@@ -47,6 +53,9 @@ namespace Shmupper
             _run = run;
             _cameraBaseLocal = _camera.localPosition;
             _yaw = transform.eulerAngles.y;
+
+            _cameraComponent = _camera.GetComponent<Camera>();
+            if (_cameraComponent != null) _baseFov = _cameraComponent.fieldOfView;
         }
 
         /// Swapping in a fresh run must not re-read the camera's rest position: by then the
@@ -67,10 +76,25 @@ namespace Shmupper
 
         public void AddRecoil(float amount) => _recoilPitch += amount;
 
+        /// Trauma model rather than a timed amplitude. Trauma is a 0-1 value that decays at a
+        /// steady rate, and the shake applied is trauma squared - so a big hit falls off sharply
+        /// from a violent peak instead of rattling on at full strength and then stopping dead,
+        /// which is what the previous fixed-window version did. Overlapping hits accumulate.
         public void Shake(float amount, float duration = 0.25f)
         {
-            _shakeAmount = Mathf.Max(_shakeAmount, amount);
-            _shakeTimer = Mathf.Max(_shakeTimer, duration);
+            _trauma = Mathf.Clamp01(_trauma + amount);
+            _traumaDecay = Mathf.Clamp(1f / Mathf.Max(0.05f, duration), 0.8f, 6f);
+            _shakeSeed = Random.value * 128f;
+        }
+
+        /// A directional punch, used when the player is hit. Where shake is noise with no
+        /// meaning, this shoves the view along a specific vector, so being struck from the left
+        /// actually reads as coming from the left.
+        public void Punch(Vector3 worldDirection, float force)
+        {
+            Vector3 local = transform.InverseTransformDirection(worldDirection.normalized);
+            _kickVelocity += new Vector3(local.x, local.y * 0.5f, local.z) * force;
+            _fovKick = Mathf.Max(_fovKick, force * 0.9f);
         }
 
         public void AddImpulse(Vector3 impulse)
@@ -216,24 +240,68 @@ namespace Shmupper
             if (_camera == null) return;
 
             Vector3 shakeOffset = Vector3.zero;
-            if (_shakeTimer > 0f)
+            Vector3 shakeAngles = Vector3.zero;
+
+            if (_trauma > 0f)
             {
-                _shakeTimer -= dt;
-                float k = Mathf.Clamp01(_shakeTimer / 0.25f) * _shakeAmount;
+                _trauma = Mathf.Max(0f, _trauma - _traumaDecay * dt);
+
+                float k = _trauma * _trauma;
+                float t = Time.time * 42f;
+
+                // Three decorrelated noise streams. Rotational shake does most of the work -
+                // translating the camera reads as the world sliding, rotating it reads as the
+                // player being rocked, which is what a hit should feel like.
+                shakeAngles = new Vector3(
+                    (Mathf.PerlinNoise(_shakeSeed, t) - 0.5f) * 5.5f * k,
+                    (Mathf.PerlinNoise(_shakeSeed + 17f, t) - 0.5f) * 5.5f * k,
+                    (Mathf.PerlinNoise(_shakeSeed + 41f, t) - 0.5f) * 8f * k);
+
                 shakeOffset = new Vector3(
-                    (Mathf.PerlinNoise(Time.time * 34f, 0f) - 0.5f) * k,
-                    (Mathf.PerlinNoise(0f, Time.time * 31f) - 0.5f) * k,
+                    (Mathf.PerlinNoise(_shakeSeed + 63f, t) - 0.5f) * 0.28f * k,
+                    (Mathf.PerlinNoise(_shakeSeed + 89f, t) - 0.5f) * 0.28f * k,
                     0f);
-                if (_shakeTimer <= 0f) _shakeAmount = 0f;
             }
+
+            // Directional punch, sprung back to centre. Stiff enough to be over quickly, damped
+            // enough not to bounce.
+            _kickVelocity -= _kickOffset * (150f * dt);
+            _kickVelocity *= Mathf.Exp(-16f * dt);
+            _kickOffset += _kickVelocity * dt;
 
             // A slight roll into the strafe direction sells the speed without making the player
             // seasick; it is scaled by actual sideways velocity rather than input.
             float sideways = Vector3.Dot(HorizontalVelocity, transform.right);
             float roll = Mathf.Clamp(-sideways * 0.18f, -2.4f, 2.4f);
 
-            _camera.localPosition = _cameraBaseLocal + shakeOffset;
-            _camera.localRotation = Quaternion.Euler(_pitch + _recoilPitch, 0f, roll);
+            _camera.localPosition = _cameraBaseLocal + shakeOffset + _kickOffset * 0.12f;
+            _camera.localRotation = Quaternion.Euler(
+                _pitch + _recoilPitch + shakeAngles.x - _kickOffset.z * 6f,
+                shakeAngles.y,
+                roll + shakeAngles.z + _kickOffset.x * 8f);
+
+            ApplyFovKick(dt);
+        }
+
+        /// Field of view carries two things at once: a slow widening with speed, which makes
+        /// running fast feel fast without touching the movement code, and a sharp punch when the
+        /// player is hit or fires something heavy.
+        void ApplyFovKick(float dt)
+        {
+            if (_cameraComponent == null) return;
+
+            _fovKick = Mathf.MoveTowards(_fovKick, 0f, dt * 9f);
+
+            float speedWiden = Mathf.Clamp01(SpeedFraction) * 6f;
+            float target = _baseFov + speedWiden + _fovKick * 5f;
+
+            _cameraComponent.fieldOfView = Mathf.Lerp(_cameraComponent.fieldOfView, target, dt * 10f);
+        }
+
+        /// Lets weapons punch the view without pretending to be a damage source.
+        public void AddFovKick(float amount)
+        {
+            _fovKick = Mathf.Min(1.4f, _fovKick + amount);
         }
     }
 }

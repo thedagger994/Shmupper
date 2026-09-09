@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -27,24 +28,24 @@ namespace Shmupper
 
         RectTransform _compassStrip;
         readonly List<Image> _enemyMarkers = new List<Image>();
-        readonly List<Text> _cardinalLabels = new List<Text>();
+        readonly List<TMP_Text> _cardinalLabels = new List<TMP_Text>();
         Image _objectiveMarker;
 
         static readonly string[] CardinalNames = { "N", "NE", "E", "SE", "S", "SW", "W", "NW" };
 
         Image _healthFill;
-        Text _healthText, _healthShadow;
-        Text _weaponText, _weaponShadow;
-        Text _ammoText, _ammoShadow;
-        Text _weaponListText;
-        Text _scoreText, _scoreShadow;
-        Text _recordText;
-        Text _floorText, _floorShadow;
-        Text _threatText;
-        Text _comboText;
-        Text _announceText;
-        Text _objectiveText;
-        Text _hintText;
+        TMP_Text _healthText, _healthShadow;
+        TMP_Text _weaponText, _weaponShadow;
+        TMP_Text _ammoText, _ammoShadow;
+        TMP_Text _weaponListText;
+        TMP_Text _scoreText, _scoreShadow;
+        TMP_Text _recordText;
+        TMP_Text _floorText, _floorShadow;
+        TMP_Text _threatText;
+        TMP_Text _comboText;
+        TMP_Text _announceText;
+        TMP_Text _objectiveText;
+        TMP_Text _hintText;
 
         readonly List<Image> _flaskIcons = new List<Image>();
         RectTransform _flaskRow;
@@ -55,7 +56,7 @@ namespace Shmupper
 
         RectTransform _bossBar;
         Image _bossFill;
-        Text _bossLabel;
+        TMP_Text _bossLabel;
 
         float _announceTimer;
         float _flashAmount;

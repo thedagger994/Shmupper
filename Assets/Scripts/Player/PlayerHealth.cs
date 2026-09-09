@@ -12,6 +12,7 @@ namespace Shmupper
         public event Action<float, float> OnHealthChanged;
         public event Action<int, int> OnFlasksChanged;
         public event Action<Vector3> OnHurt;
+        public event Action OnHealed;
         public event Action OnDied;
 
         RunState _run;
@@ -79,6 +80,7 @@ namespace Shmupper
             if (!IsAlive || amount <= 0f) return;
 
             _health = Mathf.Min(MaxHealth, _health + amount);
+            OnHealed?.Invoke();
             Broadcast();
         }
 
@@ -92,7 +94,17 @@ namespace Shmupper
 
             if (_run != null) _run.TookDamageOnThisFloor = true;
 
-            _controller?.Shake(Mathf.Clamp(amount * 0.02f, 0.06f, 0.5f));
+            // Trauma scales with the bite the hit took out of the player rather than its raw
+            // number, so a 20 point hit on a nearly dead Gunmage rattles the screen far harder
+            // than the same hit at full health.
+            float severity = Mathf.Clamp01(amount / Mathf.Max(1f, MaxHealth * 0.28f));
+            _controller?.Shake(Mathf.Lerp(0.22f, 0.85f, severity), Mathf.Lerp(0.30f, 0.55f, severity));
+
+            // Punch the view away from whatever hit us, so damage has a direction.
+            Vector3 from = info.Point - (transform.position + Vector3.up * 0.9f);
+            if (from.sqrMagnitude > 0.01f)
+                _controller?.Punch(-from.normalized, Mathf.Lerp(0.10f, 0.34f, severity));
+
             if (info.Push.sqrMagnitude > 0.01f) _controller?.AddImpulse(info.Push * 0.6f);
 
             Sfx.Play2D(SfxId.PlayerHurt, 1f, Mathf.Clamp01(amount / 30f) * 0.8f + 0.2f);
@@ -136,6 +148,7 @@ namespace Shmupper
             _flasks--;
             _health = Mathf.Min(MaxHealth, _health + MaxHealth * 0.45f);
 
+            OnHealed?.Invoke();
             Sfx.Play2D(SfxId.Heal);
             Fx.Burst(transform.position + Vector3.up * 0.8f, Palette.ShrineGlow, 2.2f, 0.4f);
             Broadcast();
