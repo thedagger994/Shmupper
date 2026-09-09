@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3603f66bcf9f8524297d77c1d160f082, type: 3}
+  m_Name: GameContent
+  m_EditorClassIdentifier: Assembly-CSharp::Shmupper.GameContent
+  EnemyPrefabs:
+  - {fileID: 2511115383708523264, guid: 601039f9977467a48880228ad0c17c19, type: 3}
+  - {fileID: 2384526551052492022, guid: 7c4a4b358f92d7341baade05919db644, type: 3}
+  - {fileID: 8128876964154715142, guid: 17943a19f29d14d42bbd26ec1ce0e101, type: 3}
+  - {fileID: 8844793167141669823, guid: 8966a6097d57f52468a2a82d91c89669, type: 3}
+  - {fileID: 1031565597447830908, guid: d181da07f4409db4fa1bd427dc6eb0cc, type: 3}
+  - {fileID: 5731343865466442433, guid: 4fb06f0750f69874ab215c659b882ccc, type: 3}
+  WeaponPrefabs:
+  - {fileID: 3134007932411456956, guid: 500cbe2092a4b7d4f93354d0d301f111, type: 3}
+  - {fileID: 4668968736045223038, guid: 98af4e9782390f84ab2f35734da2c01d, type: 3}
+  - {fileID: 1214102645357638905, guid: 5f76a57179cdc644f93968eeb7289a6e, type: 3}
+  - {fileID: 5239256592382646127, guid: c880cfd30654adc419712e35124e3dcc, type: 3}
