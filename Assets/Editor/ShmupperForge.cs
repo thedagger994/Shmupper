@@ -451,7 +451,20 @@ namespace Shmupper.EditorTools
             blur.intensity.value = 0.14f;
             blur.clamp.value = 0.04f;
 
+            // VolumeProfile.Add creates each component in memory only. Without parenting them
+            // into the profile asset they are never serialized, and the profile saves with a
+            // list of null references - which looks like a working asset until nothing grades.
+            foreach (var component in profile.components)
+            {
+                if (component == null || AssetDatabase.Contains(component)) continue;
+
+                component.name = component.GetType().Name;
+                component.hideFlags = HideFlags.HideInHierarchy;
+                AssetDatabase.AddObjectToAsset(component, profile);
+            }
+
             EditorUtility.SetDirty(profile);
+            AssetDatabase.SaveAssets();
             return profile;
         }
 
