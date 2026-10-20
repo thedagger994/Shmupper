@@ -538,7 +538,7 @@ namespace Shmupper
             }
 
             if (_hintText != null)
-                _hintText.text = capacity > 0 ? "[F] FLASK  " + count + "/" + capacity : "";
+                _hintText.text = capacity > 0 ? "[" + InputHints.Flask + "] FLASK  " + count + "/" + capacity : "";
         }
 
         void HandleWeaponChanged(WeaponRuntime weapon)

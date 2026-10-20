@@ -419,6 +419,7 @@ namespace Shmupper
 
         void Update()
         {
+            InputHints.Poll();
             FollowListener();
             HandleGlobalKeys();
 

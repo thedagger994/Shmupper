@@ -42,6 +42,30 @@ namespace Shmupper
             }
         }
 
+        /// Never hand null to `new Material`.
+        ///
+        /// It throws, and because materials are built while the level is being constructed, that
+        /// exception used to abort level construction halfway and leave an entirely black world
+        /// with a working HUD painted over it. A wrongly-shaded wall is a cosmetic bug; a thrown
+        /// exception here is a dead build. The forge registers the real shaders as always-included
+        /// so this should never fire, but it is the difference between a blemish and a black
+        /// screen if one ever goes missing again.
+        static Shader Safe(Shader preferred, string context)
+        {
+            if (preferred != null) return preferred;
+
+            var fallback = Shader.Find("Universal Render Pipeline/Lit")
+                        ?? Shader.Find("Universal Render Pipeline/Unlit")
+                        ?? Shader.Find("Sprites/Default")
+                        ?? Shader.Find("Hidden/InternalErrorShader");
+
+            Debug.LogError("Shmupper: shader missing for " + context +
+                           ". It is probably not in Always Included Shaders, so it was stripped " +
+                           "from this build. Run Shmupper > Register Required Shaders.");
+
+            return fallback;
+        }
+
         public static void Clear()
         {
             Cache.Clear();
@@ -52,7 +76,7 @@ namespace Shmupper
             string key = "L" + baseColor + emission + smoothness + metallic;
             if (Cache.TryGetValue(key, out var cached) && cached != null) return cached;
 
-            var m = new Material(LitShader) { name = "Lit_" + key.GetHashCode() };
+            var m = new Material(Safe(LitShader, "MatLib.Lit")) { name = "Lit_" + key.GetHashCode() };
             m.SetColor("_BaseColor", baseColor);
             m.SetColor("_Color", baseColor);
             m.SetFloat("_Smoothness", smoothness);
@@ -73,7 +97,7 @@ namespace Shmupper
             string key = "U" + color;
             if (Cache.TryGetValue(key, out var cached) && cached != null) return cached;
 
-            var m = new Material(UnlitShader) { name = "Unlit_" + key.GetHashCode() };
+            var m = new Material(Safe(UnlitShader, "MatLib.Unlit")) { name = "Unlit_" + key.GetHashCode() };
             m.SetColor("_BaseColor", color);
             m.SetColor("_Color", color);
             Cache[key] = m;
@@ -86,7 +110,7 @@ namespace Shmupper
             string key = "V" + baseColor + ambient + boost + (stone != null ? stone.name : "none") + detail;
             if (Cache.TryGetValue(key, out var cached) && cached != null) return cached;
 
-            var m = new Material(VertexLitShader) { name = "VLit_" + key.GetHashCode() };
+            var m = new Material(Safe(VertexLitShader, "MatLib.VertexLit")) { name = "VLit_" + key.GetHashCode() };
             m.SetColor("_BaseColor", baseColor);
             m.SetColor("_Color", baseColor);
             m.SetColor("_Ambient", ambient);

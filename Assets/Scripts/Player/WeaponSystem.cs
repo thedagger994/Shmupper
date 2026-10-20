@@ -106,8 +106,21 @@ namespace Shmupper
 
             HandleSwitching();
 
+            if (FirePressed()) TryFire();
+        }
+
+        /// Hold to fire on either scheme. The trigger is treated as a button at a low threshold
+        /// rather than as an analogue axis - this is an arcade shooter, not a racing game, and a
+        /// partially pulled trigger should still shoot.
+        static bool FirePressed()
+        {
             var mouse = Mouse.current;
-            if (mouse != null && mouse.leftButton.isPressed) TryFire();
+            if (mouse != null && mouse.leftButton.isPressed) return true;
+
+            var pad = Gamepad.current;
+            if (pad == null) return false;
+
+            return pad.rightTrigger.ReadValue() > 0.15f || pad.rightShoulder.isPressed;
         }
 
         void HandleSwitching()
@@ -128,6 +141,16 @@ namespace Shmupper
                 float scroll = mouse.scroll.ReadValue().y;
                 if (scroll > 0.1f) Cycle(1);
                 else if (scroll < -0.1f) Cycle(-1);
+            }
+
+            var pad = Gamepad.current;
+            if (pad != null)
+            {
+                // Left bumper cycles back, D-pad left and right do the same, so the player can
+                // switch without taking a thumb off the right stick.
+                if (pad.leftShoulder.wasPressedThisFrame) Cycle(-1);
+                if (pad.dpad.right.wasPressedThisFrame) Cycle(1);
+                if (pad.dpad.left.wasPressedThisFrame) Cycle(-1);
             }
         }
 

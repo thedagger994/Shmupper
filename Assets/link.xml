@@ -1,0 +1,19 @@
+<!--
+  Managed code stripping directives for IL2CPP builds.
+
+  IL2CPP strips any type nothing statically references. Two things in this project are reached
+  only indirectly and so were being removed from the player:
+
+  UnityEngine.PhysicsModule - GameObject.CreatePrimitive(PrimitiveType.Capsule) attaches a
+  CapsuleCollider from native code, with no managed reference anywhere, so the type was stripped
+  and the WebGL build logged "Can't add component because class 'CapsuleCollider' doesn't exist!"
+  for every capsule the bestiary builds.
+
+  Assembly-CSharp - the game adds many of its own components through AddComponent at runtime
+  rather than from a serialized reference, which is likewise invisible to the stripper.
+-->
+<linker>
+  <assembly fullname="UnityEngine.PhysicsModule" preserve="all" />
+  <assembly fullname="UnityEngine.ParticleSystemModule" preserve="all" />
+  <assembly fullname="Assembly-CSharp" preserve="all" />
+</linker>

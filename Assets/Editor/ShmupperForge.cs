@@ -42,6 +42,7 @@ namespace Shmupper.EditorTools
             ForgeWeapons(content);
             ForgeVolumeProfile();
             ForgeFontAsset();
+            RegisterRequiredShaders();
 
             EditorUtility.SetDirty(content);
             AssetDatabase.SaveAssets();
@@ -288,6 +289,74 @@ namespace Shmupper.EditorTools
         }
 
         // ------------------------------------------------------------------ registry and scene
+
+        // ------------------------------------------------------------------ shader inclusion
+
+        /// Shaders only reached through Shader.Find must be force-included, or the player build
+        /// will not contain them.
+        ///
+        /// This is the single nastiest difference between Play mode and a build in this project.
+        /// In the editor Shader.Find searches every shader in the project, so everything works.
+        /// In a build Unity ships only shaders referenced by an asset that made it in, and every
+        /// material here is created at runtime - so Shader.Find returned null, `new Material(null)`
+        /// threw, and the exception aborted level construction partway through, leaving a black
+        /// world with a working HUD drawn over it.
+        static readonly string[] RequiredShaders =
+        {
+            "Shmupper/VertexLit",
+            "Shmupper/Particle",
+            "Universal Render Pipeline/Lit",
+            "Universal Render Pipeline/Unlit",
+            "Universal Render Pipeline/Particles/Unlit"
+        };
+
+        [MenuItem("Shmupper/Register Required Shaders", false, 41)]
+        public static void RegisterRequiredShaders()
+        {
+            var settings = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/GraphicsSettings.asset");
+            if (settings == null || settings.Length == 0)
+            {
+                Debug.LogError("[Shmupper] Could not open GraphicsSettings.asset.");
+                return;
+            }
+
+            var so = new SerializedObject(settings[0]);
+            var list = so.FindProperty("m_AlwaysIncludedShaders");
+            if (list == null)
+            {
+                Debug.LogError("[Shmupper] m_AlwaysIncludedShaders not found.");
+                return;
+            }
+
+            int added = 0;
+
+            foreach (var name in RequiredShaders)
+            {
+                var shader = Shader.Find(name);
+                if (shader == null)
+                {
+                    Debug.LogWarning("[Shmupper] Shader not found, skipping: " + name);
+                    continue;
+                }
+
+                bool present = false;
+                for (int i = 0; i < list.arraySize; i++)
+                {
+                    if (list.GetArrayElementAtIndex(i).objectReferenceValue == shader) { present = true; break; }
+                }
+                if (present) continue;
+
+                list.InsertArrayElementAtIndex(list.arraySize);
+                list.GetArrayElementAtIndex(list.arraySize - 1).objectReferenceValue = shader;
+                added++;
+            }
+
+            so.ApplyModifiedProperties();
+            AssetDatabase.SaveAssets();
+
+            Debug.Log("[Shmupper] Required shaders registered (" + added + " added, " +
+                      list.arraySize + " total always-included).");
+        }
 
         // ------------------------------------------------------------------ typography
 

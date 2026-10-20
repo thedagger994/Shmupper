@@ -262,48 +262,4 @@ namespace Shmupper
         }
     }
 
-    public class PartBob : MonoBehaviour
-    {
-        Vector3 _origin;
-        float _amplitude, _speed, _phase;
-
-        public void Setup(float amplitude, float speed)
-        {
-            _amplitude = amplitude;
-            _speed = speed;
-            _phase = Random.value * 10f;
-            _origin = transform.localPosition;
-        }
-
-        void Update()
-        {
-            transform.localPosition = _origin + Vector3.up * (Mathf.Sin(Time.time * _speed + _phase) * _amplitude);
-        }
-    }
-
-    public class PartSpin : MonoBehaviour
-    {
-        Vector3 _rate;
-
-        public void Setup(Vector3 degreesPerSecond) => _rate = degreesPerSecond;
-
-        void Update() => transform.localRotation *= Quaternion.Euler(_rate * Time.deltaTime);
-    }
-
-    public class PartFlap : MonoBehaviour
-    {
-        float _dir, _phase;
-
-        public void Setup(float direction)
-        {
-            _dir = direction;
-            _phase = Random.value * 6f;
-        }
-
-        void Update()
-        {
-            float a = Mathf.Sin(Time.time * 11f + _phase) * 34f;
-            transform.localRotation = Quaternion.Euler(0f, 0f, a * _dir);
-        }
-    }
 }

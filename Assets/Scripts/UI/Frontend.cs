@@ -33,6 +33,7 @@ namespace Shmupper
 
         TMP_Text _creditsText;
         TMP_Text _startText;
+        TMP_Text _coinText;
         TMP_Text _recordText;
 
         TMP_Text _gameOverBody;
@@ -98,7 +99,7 @@ namespace Shmupper
             _gameOverBody = UiKit.Label(_gameOverPage, "Body", "", 32, Palette.HudInk, TextAnchor.UpperCenter,
                 new Vector2(0.5f, 0.5f), new Vector2(0.5f, 1f), new Vector2(0f, 210f), new Vector2(1400f, 520f));
 
-            UiKit.Banner(_gameOverPage, "Hint", "PRESS ENTER", 26, Palette.HudDim, -330f);
+            UiKit.Banner(_gameOverPage, "Hint", "PRESS " + InputHints.Confirm, 26, Palette.HudDim, -330f);
             _gameOverPage.gameObject.SetActive(false);
         }
 
@@ -128,7 +129,7 @@ namespace Shmupper
             _startText = UiKit.Label(_footer, "Start", "", 32, Palette.HudMint, TextAnchor.LowerRight,
                 new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-44f, 36f), new Vector2(900f, 44f));
 
-            UiKit.Label(_footer, "Coin", "[C] INSERT COIN", 24, Palette.HudDim, TextAnchor.LowerLeft,
+            _coinText = UiKit.Label(_footer, "Coin", "", 24, Palette.HudDim, TextAnchor.LowerLeft,
                 new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(44f, 8f), new Vector2(800f, 30f));
         }
 
@@ -220,9 +221,10 @@ namespace Shmupper
 
             _recordText.text = "RECORD   " + UiKit.Money(SaveSystem.Record) + "   BY " + SaveSystem.RecordHolder;
             _creditsText.text = "CREDITS  " + _credits.ToString("00");
+            _coinText.text = "[" + InputHints.Credit + "] INSERT COIN";
 
             bool canStart = _credits > 0;
-            _startText.text = canStart ? "PRESS ENTER TO START" : "INSERT COIN TO PLAY";
+            _startText.text = canStart ? "PRESS " + InputHints.Start + " TO START" : "INSERT COIN TO PLAY";
             _startText.color = canStart
                 ? Color.Lerp(Palette.HudMint, Color.white, Mathf.PingPong(Time.unscaledTime * 2f, 1f))
                 : Palette.HudDim;
@@ -342,8 +344,23 @@ namespace Shmupper
 
         // -------------------------------------------------------------- attract text
 
+        void OnEnable()
+        {
+            // The how-to-play page is only written when the attract loop turns to it, so picking
+            // up a controller mid-page would otherwise leave the keyboard labels on screen until
+            // the loop came round again.
+            InputHints.OnSchemeChanged += RenderPage;
+        }
+
+        void OnDisable()
+        {
+            InputHints.OnSchemeChanged -= RenderPage;
+        }
+
         void RenderPage()
         {
+            if (_attractHeading == null) return;
+
             bool titleVisible = _page == 0;
             _attractTitle.gameObject.SetActive(titleVisible);
             _attractPage.Find("Sub").gameObject.SetActive(titleVisible);
@@ -361,10 +378,13 @@ namespace Shmupper
 
                 case 1:
                     _attractHeading.text = "HOW TO PLAY";
+                    // Labels come from InputHints, so this page relabels itself for whichever
+                    // controller the player last touched.
                     _attractBody.text =
-                        "W A S D   MOVE          MOUSE   LOOK          SPACE   JUMP\n" +
-                        "LEFT MOUSE   FIRE       1 - 4 / WHEEL   SWITCH WEAPON\n" +
-                        "F   DRINK A HEALING FLASK\n\n" +
+                        InputHints.Move + "   MOVE          " + InputHints.Look + "   LOOK          " +
+                        InputHints.Jump + "   JUMP\n" +
+                        InputHints.Fire + "   FIRE       " + InputHints.Switch + "   SWITCH WEAPON\n" +
+                        InputHints.Flask + "   DRINK A HEALING FLASK\n\n" +
                         "CLEAR EVERY WAVE ON THE FLOOR.\n" +
                         "FOLLOW THE COMPASS TO THE WAYSHRINE.\n" +
                         "SPEND ESSENCE, THEN DESCEND.\n\n" +

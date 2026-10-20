@@ -60,6 +60,7 @@ namespace Shmupper
         TMP_Text _threatText;
         TMP_Text _reportText;
         TMP_Text _warningText;
+        TMP_Text _hintText;
 
         readonly List<Row> _rows = new List<Row>();
         int _cursor;
@@ -92,8 +93,7 @@ namespace Shmupper
             BuildReport(leftX + TableWidth + PanelGap);
 
             _warningText = UiKit.Banner(_page, "Warning", "", 26, Palette.HudBlood, -392f);
-            UiKit.Banner(_page, "Hint", "UP / DOWN  CHOOSE      ENTER  BUY      ESC  DESCEND",
-                24, Palette.HudDim, -442f);
+            _hintText = UiKit.Banner(_page, "Hint", "", 24, Palette.HudDim, -442f);
         }
 
         void BuildTable(float leftX)
@@ -217,15 +217,27 @@ namespace Shmupper
             if (!IsOpen) return;
 
             var kb = Keyboard.current;
-            if (kb == null) return;
+            var pad = Gamepad.current;
 
-            if (kb.upArrowKey.wasPressedThisFrame || kb.wKey.wasPressedThisFrame) Move(-1);
-            if (kb.downArrowKey.wasPressedThisFrame || kb.sKey.wasPressedThisFrame) Move(1);
+            bool up = (kb != null && (kb.upArrowKey.wasPressedThisFrame || kb.wKey.wasPressedThisFrame))
+                   || (pad != null && pad.dpad.up.wasPressedThisFrame);
 
-            if (kb.enterKey.wasPressedThisFrame || kb.numpadEnterKey.wasPressedThisFrame || kb.spaceKey.wasPressedThisFrame)
-                Buy();
+            bool down = (kb != null && (kb.downArrowKey.wasPressedThisFrame || kb.sKey.wasPressedThisFrame))
+                     || (pad != null && pad.dpad.down.wasPressedThisFrame);
 
-            if (kb.escapeKey.wasPressedThisFrame || kb.backspaceKey.wasPressedThisFrame)
+            bool confirm = (kb != null && (kb.enterKey.wasPressedThisFrame ||
+                                           kb.numpadEnterKey.wasPressedThisFrame ||
+                                           kb.spaceKey.wasPressedThisFrame))
+                        || (pad != null && pad.buttonSouth.wasPressedThisFrame);
+
+            bool back = (kb != null && (kb.escapeKey.wasPressedThisFrame || kb.backspaceKey.wasPressedThisFrame))
+                     || (pad != null && (pad.buttonEast.wasPressedThisFrame || pad.startButton.wasPressedThisFrame));
+
+            if (up) Move(-1);
+            if (down) Move(1);
+            if (confirm) Buy();
+
+            if (back)
             {
                 Sfx.Play2D(SfxId.Descend);
                 OnDescend?.Invoke();
@@ -293,6 +305,10 @@ namespace Shmupper
             }
 
             _reportText.text = _report;
+
+            _hintText.text = InputHints.Choose + "  CHOOSE      " +
+                             InputHints.Confirm + "  BUY      " +
+                             InputHints.Back + "  DESCEND";
 
             _warningText.text = _run.BoughtOnThisFloor
                 ? "THE KEEP HAS TAKEN YOUR MEASURE - NO-SHRINE BONUS FORFEIT"
