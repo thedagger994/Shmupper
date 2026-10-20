@@ -424,16 +424,23 @@ namespace Shmupper
             {
                 string rank = (i + 1).ToString("00");
 
+                // Columns are placed with TextMeshPro's pos tag. Padding with spaces only lines
+                // up in a monospaced font, and this board is set in IM Fell English.
+                const string colName = "<pos=14%>";
+                const string colScore = "<pos=34%>";
+                const string colFloor = "<pos=72%>";
+
                 if (i >= entries.Count)
                 {
-                    sb.AppendLine(rank + "   ---           0        -");
+                    sb.AppendLine("<color=#5A6378>" + rank + colName + "---" + colScore + "0" + colFloor + "-</color>");
                     continue;
                 }
 
                 var e = entries[i];
                 string colour = i == 0 ? "#FFD15A" : "#E0EAFF";
-                sb.AppendLine("<color=" + colour + ">" + rank + "   " + e.Name.PadRight(5) +
-                              UiKit.Money(e.Score).PadLeft(10) + "     FLOOR " + e.Floor + "</color>");
+                sb.AppendLine("<color=" + colour + ">" + rank + colName + e.Name +
+                              colScore + UiKit.Money(e.Score) +
+                              colFloor + "FLOOR " + e.Floor + "</color>");
             }
 
             return sb.ToString();

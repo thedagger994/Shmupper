@@ -147,7 +147,19 @@ namespace Shmupper
                 _appearance.SetHealth(HealthFraction);
             }
 
-            Fx.Impact(info.Point, info.Normal, Palette.Of(Kind), 3, 0.6f);
+            // Spray scales with the bite the hit took, so a shotgun at point blank throws a far
+            // bigger burst than one Arcanoflux tick. Sparks come off in the enemy's own signature
+            // colour, which keeps a crowded fight legible: the colour of the spray tells you what
+            // you just hit without having to pick the silhouette out of the pile.
+            float bite = Mathf.Clamp01(info.Amount / Mathf.Max(1f, MaxHealth * 0.45f));
+
+            FxParticles.Sparks(info.Point, info.Normal, Palette.Of(Kind),
+                Mathf.RoundToInt(Mathf.Lerp(5f, 20f, bite)),
+                Mathf.Lerp(6f, 13f, bite),
+                Mathf.Lerp(0.07f, 0.13f, bite));
+
+            if (bite > 0.4f) FxParticles.Debris(info.Point, Palette.Of(Kind), 5, 6f);
+
             Sfx.Play(SfxId.EnemyHurt, transform.position, 1f, 0.5f);
 
             OnHurt(info);

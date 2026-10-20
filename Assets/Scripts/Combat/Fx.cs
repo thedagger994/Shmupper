@@ -8,24 +8,15 @@ namespace Shmupper
     /// stone walls.
     public static class Fx
     {
+        /// Every impact in the game routes through the shared particle pool. This used to spawn a
+        /// GameObject per spark and destroy it moments later, which at eleven shots a second into
+        /// a crowded room meant hundreds of allocations and destructions every second.
         public static void Impact(Vector3 point, Vector3 normal, Color color, int sparks = 5, float scale = 1f)
         {
-            var root = new GameObject("Impact");
-            root.transform.position = point;
-
-            var mat = MatLib.Lit(color * 0.3f, color * 3f);
-
-            for (int i = 0; i < sparks; i++)
-            {
-                Vector3 dir = (normal + Random.insideUnitSphere * 0.85f).normalized;
-                var go = Shapes.Box(root.transform, Vector3.zero, Vector3.one * (0.12f * scale), mat,
-                    Quaternion.Euler(Random.value * 360f, Random.value * 360f, Random.value * 360f));
-
-                var mover = go.AddComponent<FxShard>();
-                mover.Launch(dir * Random.Range(4f, 11f) * scale, Random.Range(0.18f, 0.4f));
-            }
-
-            Object.Destroy(root, 0.7f);
+            FxParticles.Sparks(point, normal, color,
+                Mathf.Max(1, Mathf.RoundToInt(sparks * 1.6f)),
+                8f * scale,
+                0.085f * scale);
         }
 
         public static void Burst(Vector3 point, Color color, float radius, float life = 0.35f)
@@ -55,6 +46,7 @@ namespace Shmupper
         {
             Burst(point, color, radius, 0.45f);
             Impact(point, Vector3.up, color, 12, 1.6f);
+            FxParticles.Debris(point, color, 18, 11f);
         }
 
         /// Hitscan weapons need a visible line of flight or they feel like they do nothing. A
@@ -79,6 +71,7 @@ namespace Shmupper
         {
             Impact(point, Vector3.up, color, 10, 1.2f);
             Burst(point, color, 1.6f, 0.3f);
+            FxParticles.Debris(point, color, 12, 7.5f);
         }
     }
 

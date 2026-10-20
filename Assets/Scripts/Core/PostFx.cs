@@ -38,7 +38,7 @@ namespace Shmupper
 
         // Resting values the dynamic layer returns to. Kept here rather than read from the
         // authored profile so this component stays correct if that profile is retuned.
-        const float BaseVignette = 0.30f;
+        const float BaseVignette = 0.19f;
         const float BaseAberration = 0.06f;
         const float BaseGrain = 0.32f;
 

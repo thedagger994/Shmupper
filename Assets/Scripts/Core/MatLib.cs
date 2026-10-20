@@ -80,9 +80,10 @@ namespace Shmupper
             return m;
         }
 
-        public static Material VertexLit(Color baseColor, Color ambient, float boost = 1f)
+        public static Material VertexLit(Color baseColor, Color ambient, float boost = 1.25f,
+                                         Texture2D stone = null, float detail = 1f)
         {
-            string key = "V" + baseColor + ambient + boost;
+            string key = "V" + baseColor + ambient + boost + (stone != null ? stone.name : "none") + detail;
             if (Cache.TryGetValue(key, out var cached) && cached != null) return cached;
 
             var m = new Material(VertexLitShader) { name = "VLit_" + key.GetHashCode() };
@@ -90,6 +91,10 @@ namespace Shmupper
             m.SetColor("_Color", baseColor);
             m.SetColor("_Ambient", ambient);
             m.SetFloat("_Boost", boost);
+            m.SetFloat("_DetailStrength", detail);
+
+            if (stone != null) m.SetTexture("_BaseMap", stone);
+
             Cache[key] = m;
             return m;
         }

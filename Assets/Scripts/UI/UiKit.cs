@@ -106,6 +106,24 @@ namespace Shmupper
             return img;
         }
 
+        /// A bordered panel: an outer rectangle in the border colour with an inset fill on top.
+        /// Returns the fill, which is what callers parent their content into.
+        ///
+        /// Two nested images rather than an outline shader, because uGUI has no border primitive
+        /// and a nine-sliced sprite would mean shipping a sprite.
+        public static RectTransform Panel(Transform parent, string name, Color fill, Color border,
+                                          Vector2 anchor, Vector2 pivot, Vector2 position, Vector2 size,
+                                          float borderWidth = 2f)
+        {
+            var outer = Rect(parent, name, border, anchor, pivot, position, size);
+
+            var inner = Rect(outer.rectTransform, name + "Fill", fill,
+                new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero,
+                size - Vector2.one * (borderWidth * 2f));
+
+            return inner.rectTransform;
+        }
+
         public static Image Stretch(Transform parent, string name, Color color)
         {
             var rt = Node(parent, name);

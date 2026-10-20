@@ -427,7 +427,9 @@ namespace Shmupper.EditorTools
 
             var color = profile.Add<ColorAdjustments>(false);
             color.contrast.overrideState = true;
-            color.contrast.value = 16f;
+            color.contrast.value = 12f;
+            color.postExposure.overrideState = true;
+            color.postExposure.value = 0.35f;
             color.colorFilter.overrideState = true;
             color.colorFilter.value = new Color(0.98f, 0.96f, 1f);
 

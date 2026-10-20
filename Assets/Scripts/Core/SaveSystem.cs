@@ -30,6 +30,15 @@ namespace Shmupper
         static ScoreTable _table;
         static string FilePath => Path.Combine(Application.persistentDataPath, "shmupper_scores.json");
 
+        /// On WebGL, persistentDataPath is an in-memory filesystem backed by IndexedDB, and a
+        /// plain file write is only committed when that filesystem happens to sync - so the top
+        /// ten would routinely vanish on a page reload, which is exactly where this game is going
+        /// to be played. PlayerPrefs is backed by IndexedDB directly and commits on Save(), so the
+        /// browser build goes through there and the desktop builds keep using a readable file.
+        const string PrefsKey = "shmupper_scores";
+
+        static bool UsePrefs => Application.platform == RuntimePlatform.WebGLPlayer;
+
         public static ScoreTable Table
         {
             get
@@ -47,11 +56,18 @@ namespace Shmupper
         {
             try
             {
-                if (File.Exists(FilePath))
+                string json = null;
+
+                if (UsePrefs)
                 {
-                    string json = File.ReadAllText(FilePath);
-                    _table = JsonUtility.FromJson<ScoreTable>(json);
+                    if (PlayerPrefs.HasKey(PrefsKey)) json = PlayerPrefs.GetString(PrefsKey);
                 }
+                else if (File.Exists(FilePath))
+                {
+                    json = File.ReadAllText(FilePath);
+                }
+
+                if (!string.IsNullOrEmpty(json)) _table = JsonUtility.FromJson<ScoreTable>(json);
             }
             catch (Exception e)
             {
@@ -72,7 +88,17 @@ namespace Shmupper
         {
             try
             {
-                File.WriteAllText(FilePath, JsonUtility.ToJson(_table, true));
+                string json = JsonUtility.ToJson(_table, true);
+
+                if (UsePrefs)
+                {
+                    PlayerPrefs.SetString(PrefsKey, json);
+                    PlayerPrefs.Save();
+                }
+                else
+                {
+                    File.WriteAllText(FilePath, json);
+                }
             }
             catch (Exception e)
             {

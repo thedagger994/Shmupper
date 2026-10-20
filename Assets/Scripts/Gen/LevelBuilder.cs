@@ -13,9 +13,14 @@ namespace Shmupper
     public static class LevelBuilder
     {
         const int ChunkCells = 8;
-        const float TorchRadius = 17f;
-        const float TorchIntensity = 1.25f;
-        const int MaxRealLights = 36;
+
+        // Lighting was tuned far too dark to actually play in: torch pools barely overlapped and
+        // the gaps between them were near black. The reach and strength of the bake are both up,
+        // and ambient is raised separately, which lifts the floor of the image without washing
+        // out the pools of light that give the dungeon its shape.
+        const float TorchRadius = 24f;
+        const float TorchIntensity = 1.75f;
+        const int MaxRealLights = 48;
 
         public class BuiltLevel
         {
@@ -38,11 +43,15 @@ namespace Shmupper
             result.Root = root;
 
             Color tint = FloorTint(floorNumber);
-            Color ambient = new Color(0.055f, 0.06f, 0.09f) * Mathf.Lerp(1f, 1.4f, floorNumber * 0.08f);
+            Color ambient = new Color(0.17f, 0.18f, 0.235f) * Mathf.Lerp(1f, 1.25f, floorNumber * 0.06f);
 
-            var floorMat = MatLib.VertexLit(Palette.StoneFloor * tint, ambient);
-            var wallMat = MatLib.VertexLit(Palette.StoneWall * tint, ambient);
-            var ceilMat = MatLib.VertexLit(Palette.Ceiling * tint, ambient * 0.6f);
+            var stone = StoneTexture.Get();
+
+            // The floor takes the texture at a lower strength than the walls: at a glancing
+            // viewing angle a strongly patterned floor turns into aliased noise.
+            var floorMat = MatLib.VertexLit(Palette.StoneFloor * tint, ambient, 1.25f, stone, 0.75f);
+            var wallMat = MatLib.VertexLit(Palette.StoneWall * tint, ambient, 1.25f, stone, 1f);
+            var ceilMat = MatLib.VertexLit(Palette.Ceiling * tint, ambient * 0.75f, 1.15f, stone, 0.55f);
 
             var torches = BuildTorchSamples(map, floorNumber);
 
@@ -63,18 +72,23 @@ namespace Shmupper
             return result;
         }
 
-        /// Each descent shifts the stone toward a new hue so the player can tell how deep they are
-        /// from a single glance at a wall.
+        /// Each descent rotates the stone's hue so the player can tell how deep they are from a
+        /// single glance at a wall.
+        ///
+        /// This walks the colour wheel rather than picking from a fixed list, so it keeps giving
+        /// distinct floors however far down the player gets. The golden-ratio step means
+        /// successive floors land far apart on the wheel instead of drifting gradually, and
+        /// saturation stays low - this is weathered stone catching coloured light, not paint.
         static Color FloorTint(int floor)
         {
-            switch ((floor - 1) % 5)
-            {
-                case 0: return new Color(1.00f, 1.00f, 1.05f);
-                case 1: return new Color(0.85f, 1.05f, 0.88f);
-                case 2: return new Color(1.10f, 0.86f, 0.80f);
-                case 3: return new Color(0.86f, 0.90f, 1.15f);
-                default: return new Color(1.05f, 0.88f, 1.10f);
-            }
+            float hue = Mathf.Repeat(0.58f + (floor - 1) * 0.618f, 1f);
+            float saturation = Mathf.Lerp(0.10f, 0.26f, Mathf.Clamp01((floor - 1) / 8f));
+
+            Color c = Color.HSVToRGB(hue, saturation, 1f);
+
+            // Pull back toward neutral so the tint reads as a cast over grey stone rather than
+            // recolouring it outright.
+            return Color.Lerp(Color.white, c, 0.65f);
         }
 
         static List<TorchSample> BuildTorchSamples(DungeonMap map, int floorNumber)
@@ -208,7 +222,7 @@ namespace Shmupper
                 float ndotl = dist > 0.001f ? Vector3.Dot(n, delta / dist) : 1f;
                 // A generous wrap term keeps surfaces facing away from a torch from going pure
                 // black, which would hide walls the player still needs to navigate around.
-                ndotl = Mathf.Max(0.22f, ndotl * 0.8f + 0.2f);
+                ndotl = Mathf.Max(0.38f, ndotl * 0.72f + 0.28f);
 
                 float k = atten * ndotl * TorchIntensity;
                 var col = torches[i].Color;
@@ -255,10 +269,26 @@ namespace Shmupper
                 go.transform.SetParent(holder.transform, false);
                 go.transform.position = t.Position;
 
-                Shapes.Box(go.transform, Vector3.down * 0.45f, new Vector3(0.25f, 0.9f, 0.25f),
-                    MatLib.Lit(new Color(0.16f, 0.14f, 0.12f)));
+                var iron = MatLib.Lit(new Color(0.14f, 0.13f, 0.12f), default, 0.45f, 0.7f);
 
-                var flame = Shapes.Ball(go.transform, Vector3.zero, 0.55f, MatLib.Lit(t.Color * 0.2f, t.Color * 3.2f));
+                // The mount is a separate child so the whole sconce can sway as one piece while
+                // the flame leans independently inside it. Rotating the torch root instead would
+                // swing the light and the ember origin around with it.
+                var mount = new GameObject("Mount");
+                mount.transform.SetParent(go.transform, false);
+
+                Shapes.Box(mount.transform, Vector3.down * 0.5f, new Vector3(0.1f, 1f, 0.1f), iron,
+                    Quaternion.Euler(14f, 0f, 0f));
+                Shapes.Box(mount.transform, Vector3.down * 0.95f, new Vector3(0.3f, 0.09f, 0.3f), iron);
+                Shapes.Prim(PrimitiveType.Cylinder, mount.transform, Vector3.down * 0.12f,
+                    new Vector3(0.3f, 0.16f, 0.3f), iron);
+
+                var flame = Shapes.Ball(mount.transform, Vector3.zero, 0.55f,
+                    MatLib.Lit(t.Color * 0.2f, t.Color * 3.4f));
+
+                // A dimmer inner core gives the flame some depth instead of one flat ball.
+                Shapes.Ball(flame.transform, Vector3.up * 0.18f, 0.55f,
+                    MatLib.Lit(t.Color * 0.1f, t.Color * 1.6f));
 
                 Light light = null;
                 if (i % lightStride == 0)
@@ -266,13 +296,14 @@ namespace Shmupper
                     light = go.AddComponent<Light>();
                     light.type = LightType.Point;
                     light.color = t.Color;
-                    light.range = 14f;
-                    light.intensity = 2.6f;
+                    light.range = 21f;
+                    light.intensity = 4.2f;
                     light.shadows = LightShadows.None;
                 }
 
                 var flicker = go.AddComponent<TorchFlicker>();
-                flicker.Setup(light, flame.transform, 2.6f);
+                flicker.Setup(light, flame.transform, 4.2f, mount.transform);
+                flicker.SetEmberColor(t.Color);
                 result.Torches.Add(flicker);
             }
         }
